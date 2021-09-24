@@ -1,0 +1,20 @@
+lidar_with_mirror_pitch_controller:
+    type  : position_controllers/JointPositionController
+    joint : lidar_with_mirror_pitch_joint
+
+lidar_with_mirror_roll_controller:
+    type  : position_controllers/JointPositionController
+    joint : lidar_with_mirror_roll_joint
+
+lidar_with_mirror_mirror1_controller:
+    type  : position_controllers/JointPositionController
+    joint : lidar_with_mirror_mirror1_roll_joint
+
+lidar_with_mirror_mirror2_controller:
+    type  : position_controllers/JointPositionController
+    joint : lidar_with_mirror_mirror2_roll_joint
+
+lidar_with_mirror_prismatic_controller:
+    type  : position_controllers/JointPositionController
+    joint : lidar_with_mirror_prismatic_joint
+

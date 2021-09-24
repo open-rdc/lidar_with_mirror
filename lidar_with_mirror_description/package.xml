@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>lidar_with_mirror_description</name>
+  <version>0.0.0</version>
+  <description>The lidar_with_mirror_description package</description>
+  <maintainer email="yasuo.hayashibara@it-chiba.ac.jp">Yasuo Hayashibara</maintainer>
+  <license>TODO</license>
+  <buildtool_depend>catkin</buildtool_depend>
+  <export></export>
+</package>
