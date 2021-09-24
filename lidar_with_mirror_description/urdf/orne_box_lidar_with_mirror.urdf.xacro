@@ -222,7 +222,7 @@
   <joint name="lidar_with_mirror_pitch_joint" type="revolute">
     <parent link="lidar_with_mirror_prismatic_link"/>
     <child link="lidar_with_mirror_pitch_link"/>
-    <origin xyz="0 0 0" rpy="0 0 0"/>
+    <origin xyz="0 0 0" rpy="0 ${PI/9} 0"/>
     <axis xyz="0 1 0"/>
     <limit effort="100" velocity="100.0" lower="${-PI}" upper="${PI}" />
   </joint>
@@ -261,7 +261,7 @@
   <joint name="lidar_with_mirror_mirror1_roll_joint" type="revolute">
     <parent link="lidar_with_mirror_center_link"/>
     <child link="lidar_with_mirror_mirror1_roll_link"/>
-    <origin xyz="0 ${len} 0" rpy="0 0 0"/>
+    <origin xyz="0 ${len} 0" rpy="${-PI/2} 0 0"/>
     <axis xyz="-1 0 0"/>
     <limit effort="100" velocity="100.0" lower="${-PI}" upper="${PI}" />
   </joint>
@@ -281,7 +281,7 @@
   <joint name="lidar_with_mirror_mirror2_roll_joint" type="revolute">
     <parent link="lidar_with_mirror_center_link"/>
     <child link="lidar_with_mirror_mirror2_roll_link"/>
-    <origin xyz="0 ${-len} 0" rpy="0 0 0"/>
+    <origin xyz="0 ${-len} 0" rpy="${PI/2} 0 0"/>
     <axis xyz="1 0 0"/>
     <limit effort="100" velocity="100.0" lower="${-PI}" upper="${PI}" />
   </joint>
