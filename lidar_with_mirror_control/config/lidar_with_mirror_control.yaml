@@ -18,3 +18,7 @@ lidar_with_mirror_prismatic_controller:
     type  : position_controllers/JointPositionController
     joint : lidar_with_mirror_prismatic_joint
 
+caster_front_controller:
+    type  : position_controllers/JointPositionController
+    joint : caster_front_joint
+

@@ -151,10 +151,12 @@
 
   </link>
 
-  <joint name="caster_front_joint" type="fixed">
+  <joint name="caster_front_joint" type="prismatic">
     <parent link="base_link"/>
     <child link="caster_front_link"/>
     <origin xyz="0.362 0 0.050" rpy="0 0 0"/>
+    <axis xyz="0 0 1"/>
+    <limit effort="100" velocity="100.0" lower="-1" upper="1" />
   </joint>
 
   <link name="caster_front_link">
@@ -369,7 +371,18 @@
     <joint name="lidar_with_mirror_prismatic_joint">
       <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
     </joint>
-  <actuator name="lidar_with_mirror_prismatic_joint">
+  <actuator name="lidar_with_mirror_prismatic_motor">
+      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+  </transmission>
+
+  <transmission name="tran8">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="caster_front_joint">
+      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+    </joint>
+  <actuator name="caster_front_motor">
       <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
       <mechanicalReduction>1</mechanicalReduction>
     </actuator>
