@@ -2,34 +2,30 @@
 # -*- coding: utf-8 -*-
 
 import rospy
-import rosparam
 import tf
-from geometry_msgs.msg import Point
-from rospy.exceptions import ROSException
-from rospy.topics import Publisher
-from visualization_msgs.msg import Marker
-from sensor_msgs.msg import LaserScan
-from std_msgs.msg import Header
+import tf2_ros
 import math
-
 import copy
 import numpy as np
-
-#import sensor_msgs.point_cloud2 as pc2
-from sensor_msgs.msg import PointCloud2
+import sensor_msgs.point_cloud2 as pc2
 import laser_geometry.laser_geometry as lg
+from tf2_sensor_msgs.tf2_sensor_msgs import do_transform_cloud
+from rospy.exceptions import ROSException
+from sensor_msgs.msg import LaserScan
+from sensor_msgs.msg import PointCloud2
+from geometry_msgs.msg import TransformStamped
 
 class EstimatePosture():
     def __init__(self):
         try:
             self.mirror_distance   = rospy.get_param("/lidar_with_mirror/mirror_distance"  , 0.1         )
-            self.mirror_roll_angle = rospy.get_param("/lidar_with_mirror/mirror_roll_angle",  math.pi  /3)
-            self.scan_front_begin  = rospy.get_param("/lidar_with_mirror/scan_front_begin" , -math.pi  /3)
-            self.scan_front_end    = rospy.get_param("/lidar_with_mirror/scan_front_end"   ,  math.pi  /3)
-            self.scan_left_begin   = rospy.get_param("/lidar_with_mirror/scan_left_begin"  ,  math.pi  /3)
-            self.scan_left_end     = rospy.get_param("/lidar_with_mirror/scan_left_end"    ,  math.pi*2/3)
-            self.scan_right_begin  = rospy.get_param("/lidar_with_mirror/scan_right_begin" , -math.pi*2/3)
-            self.scan_right_end    = rospy.get_param("/lidar_with_mirror/scan_right_end"   , -math.pi  /3)
+            self.mirror_roll_angle = rospy.get_param("/lidar_with_mirror/mirror_roll_angle",  math.pi  /4)
+            self.scan_front_begin  = rospy.get_param("/lidar_with_mirror/scan_front_begin" , -math.pi  /3 + 0.01)
+            self.scan_front_end    = rospy.get_param("/lidar_with_mirror/scan_front_end"   ,  math.pi  /3 - 0.01)
+            self.scan_left_begin   = rospy.get_param("/lidar_with_mirror/scan_left_begin"  ,  math.pi  /3 + 0.01)
+            self.scan_left_end     = rospy.get_param("/lidar_with_mirror/scan_left_end"    ,  math.pi*2/3       )
+            self.scan_right_begin  = rospy.get_param("/lidar_with_mirror/scan_right_begin" , -math.pi*2/3       )
+            self.scan_right_end    = rospy.get_param("/lidar_with_mirror/scan_right_end"   , -math.pi  /3 - 0.01)
         except ROSException:
             rospy.loginfo("param load error")
 
@@ -37,11 +33,21 @@ class EstimatePosture():
         self.pub_scan_front = rospy.Publisher('scan_front', LaserScan, queue_size=1)
         self.pub_scan_right = rospy.Publisher('scan_right', LaserScan, queue_size=1)
         self.pub_scan_left  = rospy.Publisher('scan_left' , LaserScan, queue_size=1)
-        #self.pub_fit_r      = rospy.Publisher('fit_line_R', Marker, queue_size=1)
-        #self.pub_fit_l      = rospy.Publisher('fit_line_L', Marker, queue_size=1)
         self.lp = lg.LaserProjection()
         self.pub_pc_right = rospy.Publisher("point_cloud_right", PointCloud2, queue_size=1)
         self.pub_pc_left  = rospy.Publisher("point_cloud_left" , PointCloud2, queue_size=1)
+        self.tfBuffer = tf2_ros.Buffer()
+        self.listener = tf2_ros.TransformListener(self.tfBuffer)
+        self.pub_transformed_pc_front  = rospy.Publisher("transformed_point_cloud_front" , PointCloud2, queue_size=1)
+
+    def find_plane(self, xs, ys, zs):
+        r = np.c_[xs, ys, zs]
+        c = np.mean(r, axis=0)
+        r0 = r - c
+        u, s, v = np.linalg.svd(r0)
+        nv = v[-1, :]
+        ds = np.dot(r, nv)
+        return np.r_[nv, -np.mean(ds)]
 
 #   callback
 #   scanトピックの更新時に呼ばれるコールバック関数
@@ -60,40 +66,66 @@ class EstimatePosture():
         # 3次元位置に変換
         right_pc = self.lp.projectLaser(right_data)
         left_pc  = self.lp.projectLaser(left_data)
-        self.pub_pc_right.publish(right_pc)
-        self.pub_pc_left.publish(left_pc)
+        try:
+            trans_right = self.tfBuffer.lookup_transform('lidar_with_mirror_prismatic_link', right_data.header.frame_id, data.header.stamp)
+        except (tf2_ros.LookupException, tf2_ros.ConnectivityException, tf2_ros.ExtrapolationException):
+            return
+        try:
+            trans_left = self.tfBuffer.lookup_transform('lidar_with_mirror_prismatic_link', left_data.header.frame_id, data.header.stamp)
+        except (tf2_ros.LookupException, tf2_ros.ConnectivityException, tf2_ros.ExtrapolationException):
+            return
+        right_pc_base = do_transform_cloud(right_pc, trans_right)
+        left_pc_base  = do_transform_cloud(left_pc , trans_left )
+        self.pub_pc_right.publish(right_pc_base)
+        self.pub_pc_left.publish(left_pc_base)
 
-        # 左右の鏡で反射したスキャンデータの近似直線を計算
-        #func_R, x_R = self.calc_fitting_curve(right_data)
-        #func_L, x_L = self.calc_fitting_curve(left_data)
+        # 左右の鏡で反射したスキャンデータから平面を計算
+        pc_x = []
+        pc_y = []
+        pc_z = []
+        for p in pc2.read_points(right_pc_base, skip_nans=True, field_names=("x", "y", "z")):
+            pc_x.append(p[0])
+            pc_y.append(p[1])
+            pc_z.append(p[2])
+        for p in pc2.read_points(left_pc_base, skip_nans=True, field_names=("x", "y", "z")):
+            pc_x.append(p[0])
+            pc_y.append(p[1])
+            pc_z.append(p[2])
+        coef = self.find_plane(pc_x, pc_y, pc_z)
+        
+        #print(coef)
+        #min_val = 0.0
+        #max_val = 0.0
+        #for x, y, z in zip(pc_x, pc_y, pc_z):
+        #    val = coef[0]*x+coef[1]*y+coef[2]*z+coef[3]
+        #    min_val = min(min_val, val)
+        #    max_val = max(max_val, val)
+        #print("min: " + str(min_val) + ", max: " + str(max_val))
 
-        # それぞれの近似直線の方程式から２点(Xの最小と最大についてのY)のXY座標を計算
-        #line_pos_R = self.calc_function(func_R, x_R[0], x_R[1])
-        #fit_r = self.calc_marker(line_pos_R, data.header.stamp)
-        #line_pos_L = self.calc_function(func_L, x_L[0], x_L[1])
-        #fit_l = self.calc_marker(line_pos_L, data.header.stamp)
-        #line_pos_R = [self.calc_function(func_R, x_R[0]), self.calc_function(func_R, x_R[1])]
-        #line_pos_L = [self.calc_function(func_L, x_L[0]), self.calc_function(func_L, x_L[1])]
+        # 平面からLiDARの座標を計算
+        br = tf2_ros.TransformBroadcaster()
+        t = TransformStamped()
+        t.header.stamp = data.header.stamp
+        t.header.frame_id = "lidar_with_mirror_prismatic_link"
+        t.child_frame_id = "lidar_with_mirror_estimated_link"
+        t.transform.translation.x = 0
+        t.transform.translation.y = 0
+        t.transform.translation.z = coef[3]/coef[2] - 0.3
+        pitch = math.atan(-coef[0]/coef[2])
+        roll  = math.atan(-coef[1]/coef[2])
+        print(coef)
+        print("roll: "+str(roll)+" ,pitch: "+str(pitch))
+        q = tf.transformations.quaternion_from_euler(roll, pitch+math.pi/9, 0)
+        t.transform.rotation.x = q[0]
+        t.transform.rotation.y = q[1]
+        t.transform.rotation.z = q[2]
+        t.transform.rotation.w = q[3]
+        br.sendTransform(t)
 
-        # 鏡の点群の近似直線を３次元へ変換
-        #bottom_r = self.convert_3d(func_R, x_R[0], x_R[1], 1)
-        #bottom_l = self.convert_3d(func_L, x_L[0], x_L[1], -1)
-
-        # 計測平面の近似直線を表示するためのマーカーデータの作成
-        #fit_r = self.calc_marker(bottom_r[0], data.header.stamp)
-        #fit_l = self.calc_marker(bottom_l[0], data.header.stamp)
-
-        # 計測平面からセンサのピッチとロールの傾きを表示
-        #pose = self.calc_pose(bottom_r[1], bottom_l[1])
-        #print(A)
-
-        #self.broadcast_pose(pose[0], pose[1], pose[2])
-        # パブリッシュ
-        self.pub_scan_front.publish(front_data)
-        self.pub_scan_right.publish(right_data)
-        self.pub_scan_left.publish(left_data)
-        #self.pub_fit_r.publish(fit_r)
-        #self.pub_fit_l.publish(fit_l)
+        #LiDARの座標から正面のLiDARの位置を検出
+        front_pc = self.lp.projectLaser(front_data)
+        front_pc.header.frame_id = "lidar_with_mirror_estimated_link"
+        self.pub_transformed_pc_front.publish(front_pc)
 
 #   trim_scan_data
 #   スキャンデータから取得角度に基づいてターゲット範囲のスキャンデータを取り出す
@@ -114,245 +146,6 @@ class EstimatePosture():
         trim_data.angle_min = start_angle_rad
         trim_data.angle_max = end_angle_rad
         return trim_data
-
-#   getXY
-#   極座標から直行座標へ変換
-#   引数：getXY(any r, any rad)
-#       r       動径
-#       rad     極角(radian)
-#   返り値: float x, float y
-#       x   x座標
-#       y   y座標
-#
-
-    def getXY(self, r, rad):
-        x = r * np.cos(rad)
-        y = r * np.sin(rad)
-        return x, y
-
-
-
-
-#   calc_fitting_curve
-#   与えられたスキャンデータを一次最小二乗法でフィッテング
-#   引数：calc_fitting_curve(LaserScan data)
-#       data    フィッティングしたい点群を含むスキャンデータ
-#   返り値:list func[float slope,float intercept], list pos[float x_begin, float x_end]
-#       func[slope, intercept]      フィッティングした関数の傾きslopeと切片interceptをリストで返す
-#       pos[x_begin, x_end]         スキャンデータの直交座標系でのX座標の始点と終点をリストで返す
-#
-    def calc_fitting_curve(self, data):
-        angle = data.angle_min
-        x = []
-        y = []
-        for range in data.ranges:
-            angle = angle + data.angle_increment
-            position = self.getXY(range, angle)
-
-            if not np.isnan(position[0]):
-                x.append(position[0])
-                y.append(position[1])
-            else:
-                print("range value is NaN")
-
-        fit_line = np.polyfit(np.array(x), np.array(y), 1)
-        func = list(fit_line)
-        pos = [x[0], x[-1]]
-
-        return func, pos
-
-
-
-#   calc_function
-#   一次関数の傾きと切片、x座標からy座標を求める
-#   引数：calc_function(list func[slope, intercpt], list x[x_begin, x_end])
-#       data    フィッティングしたい点群を含むスキャンデータ
-#   返り値:float y
-#       y       y=ax+bのyの値
-#
-
-    def calc_function(self, func, x):
-        a = func[0]
-        b = func[1]
-
-        y = a * x + b
-
-        return y
-
-
-
-
-
-#   calc_marker
-#   直線のmarkerトピックのデータ作成
-#   引数：calc_marker( list pos[x1,y1,z1,x2,y2,z2], std_msgs/Header time)
-#       pos[x1,y1,z1,x2,y2,z2]      表示する直線の始点のxyz座標,終点のxyz座標
-#       time                        トピックのheadertime
-#   返り値:std_msgs/Header marker_data
-#         marker_data       引数で与えられた点間を結ぶ直線をrvizで表示できる形式にしたmarkerデータ
-
-
-    def calc_marker(self, pos, headertime):
-        marker_data = Marker()
-        marker_data.header.frame_id = "laser"
-        marker_data.ns = "soiya"
-        marker_data.id = 0
-        marker_data.header.stamp = headertime
-        marker_data.action = Marker.ADD
-
-        marker_data.pose.position.x = 0.0
-        marker_data.pose.position.y = 0.0
-        marker_data.pose.position.z = 0.0
-
-        # クォータニオン
-        marker_data.pose.orientation.x = 0.0
-        marker_data.pose.orientation.y = 0.0
-        marker_data.pose.orientation.z = 0.0
-        marker_data.pose.orientation.w = 1.0
-
-        # 色設定
-        marker_data.color.r = 0.0
-        marker_data.color.g = 1.0
-        marker_data.color.b = 0.0
-        marker_data.color.a = 1.0
-
-        # 直線のサイズ設定
-        marker_data.scale.x = 0.005
-        marker_data.scale.y = 0.005
-        marker_data.scale.z = 0.005
-
-        marker_data.lifetime = rospy.Duration()
-        marker_data.type = Marker.LINE_STRIP
-
-        marker_data.points = []
-
-        # 始点の座標
-        first_point = Point()
-        first_point.x = pos[0]
-        first_point.y = pos[1]
-        first_point.z = pos[2]
-        marker_data.points.append(first_point)
-
-        # 終点の座標
-        second_point = Point()
-        second_point.x = pos[3]
-        second_point.y = pos[4]
-        second_point.z = pos[5]
-        marker_data.points.append(second_point)
-        return marker_data
-
-
-
-
-
-
-#   convert_3d
-#   鏡で反射された部分のデータを三次元へ変換する(鏡の位置を境にZ方向へ折り返す)
-#   引数：convert_3d(list func[float slope, float intercept], pos1, pos2, dir)
-#           func[float slope, float intercept]  1次関数の傾きslope, 切片intercept
-#           pos1                                始点x座標
-#           pos2                                終点x座標
-#           dir                                 スキャンデータをどちらに折り返すかのフラグ left側scanなら0,rightなら1
-#
-#   返り値: position[x1,y1,z1,x2,y2,z2], func_3d[a,b]
-#         position      marker_data用の直線の始点と終点の座標
-#         func_3d       ZX平面上での1次関数
-#               a 傾き
-#               b 切片
-#
-
-    def convert_3d(self, func, pos1, pos2, dir):
-        offset = self.mirror_d * dir
-
-        # 傾きを左右のデータごとに最終的にZ軸下向きになるようにする
-        a = func[0] * dir
-
-        # 切片から鏡までの距離を引く
-        b = (func[1] - offset) * dir
-
-        # 鏡まではXY平面、鏡より先はZX平面に変換
-        # ZX平面は原点からY方向に鏡までの距離をオフセットした位置での平面になる
-        x1 = pos1
-        y1 = offset
-        z1 = a * pos1 + b
-        x2 = pos2
-        y2 = offset
-        z2 = a * pos2 + b
-        position = [x1, y1, z1, x2, y2, z2]
-        func_3d = [a, b]
-
-        return position, func_3d
-
-
-
-
-
-
-#   calc_pose
-#   慣性座標系(測定平面)から見たlidarの傾きを計算する
-#   引数：calc_pose(list func_R, list func_L)
-#           func_R [float slope_R, float intercept_R]  1次関数の傾きslope, 切片intercept
-#           func_L [float slope_L, float intercept_L]  1次関数の傾きslope, 切片intercept
-#
-#   返り値: roll, pitch
-#         roll      測定平面とセンサ座標系のX軸のなす角(pitch)
-#         pitch      測定平面とセンサ座標系のY軸のなす角(Roll)
-#           hight       測定座標系から見たurgの高さ
-
-    def calc_pose(self, func_R, func_L):
-        Ar = func_R[0]
-        Br = func_R[1]
-        Al = func_L[0]
-        Bl = func_L[1]
-
-        # pitch
-        Ax = (Ar + Al)/2    #測定平面を決定するために２直線の傾きの平均を取る
-        #測定平面の傾きAxから、測定平面とセンサ座標系XY平面のなす角(pitch)を求める
-        ytan = Ax          
-        pitch = np.arctan(ytan)  #逆三角関数で解く
-
-        # roll
-        # センサ座標系y軸とそれぞれの近似直線の切片の差を２枚の鏡の距離で割ってtanを出す
-        xtan = (Bl - Br) / (2 * self.mirror_d)
-        roll = np.arctan(xtan)
-
-        # hight
-        
-        #切片の平均を取ってセンサ座標系Z軸の地面までの距離を出す
-        Bc = (Bl+Br)/2
-
-        hight = np.cos(roll) * np.cos(pitch) * Bc
-
-
-        #s = "height = " + str(hight) + ", roll = " + str(roll) + ", pitch = " + str(pitch)
-        #rospy.loginfo(s)
-        print(str(hight) + ", " + str(roll) + ", " + str(pitch))
-
-
-        return roll, pitch, hight
-
-
-
-
-
-#   broadcast_pose
-#   tfにlidarの姿勢をブロードキャストする
-#   引数：broadcast_pose(self, roll, pitch, hight)
-#
-#   返り値: なし
-#
-
-    def broadcast_pose(self, roll, pitch, hight):
-
-        br = tf.TransformBroadcaster()
-        br.sendTransform((0,0,hight),
-                        #lidarは上下逆についているので座標を変換
-                        tf.transformations.quaternion_from_euler(-roll+np.pi,-pitch , 0),
-                        rospy.Time.now(),
-                        "measurement_plane",
-                        "laser")
-    
-
 
 if __name__ == '__main__':
     rospy.init_node('estimate_posture')
