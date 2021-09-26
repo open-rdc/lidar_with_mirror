@@ -115,7 +115,7 @@ class EstimatePosture():
         roll  = math.atan(-coef[1]/coef[2])
         print(coef)
         print("roll: "+str(roll)+" ,pitch: "+str(pitch))
-        q = tf.transformations.quaternion_from_euler(roll, pitch+math.pi/9, 0)
+        q = tf.transformations.quaternion_from_euler(-roll, pitch+math.pi/9, 0)
         t.transform.rotation.x = q[0]
         t.transform.rotation.y = q[1]
         t.transform.rotation.z = q[2]

@@ -18,6 +18,7 @@ class move_lidar:
         self.lidar_with_mirror_pitch_pub     = rospy.Publisher('/lidar_with_mirror_pitch_controller/command'    , Float64, queue_size=1)
         self.lidar_with_mirror_roll_pub      = rospy.Publisher('/lidar_with_mirror_roll_controller/command'     , Float64, queue_size=1)
         self.caster_front_pub                = rospy.Publisher('/caster_front_controller/command'               , Float64, queue_size=1)
+        self.wheel_hinge_pub                 = rospy.Publisher('/wheel_hinge_controller/command'                , Float64, queue_size=1)
         time.sleep(0.5)
         self.lidar_with_mirror_mirror1_pub.publish(0.0)
         self.lidar_with_mirror_mirror2_pub.publish(0.0)
@@ -25,7 +26,8 @@ class move_lidar:
         self.lidar_with_mirror_pitch_pub.publish(0.0)
         self.lidar_with_mirror_roll_pub.publish(0.0)
         self.caster_front_pub.publish(0.0)
-        self.seq_no = 0
+        self.wheel_hinge_pub.publish(0.0)
+        self.seq_no = 10
         self.prev_seq_no = -1
 
     def loop(self):
@@ -112,6 +114,23 @@ class move_lidar:
             if self.height <= 0.0:
                 self.seq_no += 1
         elif self.seq_no == 13:
+            if self.is_first:
+                self.angle_deg = 0.0
+            self.angle_deg += math.pi/18/50
+            self.wheel_hinge_pub.publish(self.angle_deg)
+            if self.angle_deg >= math.pi/18:
+                self.seq_no += 1
+        elif self.seq_no == 14:
+            self.angle_deg -= math.pi/18/50
+            self.wheel_hinge_pub.publish(self.angle_deg)
+            if self.angle_deg <= -math.pi/18:
+                self.seq_no += 1
+        elif self.seq_no == 15:
+            self.angle_deg += math.pi/18/50
+            self.wheel_hinge_pub.publish(self.angle_deg)
+            if self.angle_deg >= 0:
+                self.seq_no += 1
+        elif self.seq_no == 16:
             return False
         return True
 

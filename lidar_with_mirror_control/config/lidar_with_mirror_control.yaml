@@ -22,3 +22,7 @@ caster_front_controller:
     type  : position_controllers/JointPositionController
     joint : caster_front_joint
 
+wheel_hinge_controller:
+    type  : position_controllers/JointPositionController
+    joint : wheel_hinge
+
