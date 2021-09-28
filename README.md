@@ -26,7 +26,7 @@ rosrun lidar_with_mirror mirror_lidar.py
 
 ### 実験
 
-`experiment.py'を変更して，ロール方向もしくはピッチ方向にセンサを傾けるように変更
+`experiment.py`を変更して，ロール方向もしくはピッチ方向にセンサを傾けるように変更
 
 推定した姿勢の誤算の検証
 ```
