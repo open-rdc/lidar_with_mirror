@@ -115,7 +115,7 @@ class EstimatePosture():
         t.child_frame_id = "lidar_with_mirror_estimated_link"
         t.transform.translation.x = 0
         t.transform.translation.y = 0
-        t.transform.translation.z = coef[3]/coef[2]
+        t.transform.translation.z = coef[3]/coef[2] + 0.3
         roll  = math.atan(coef[1]/coef[2])
         pitch = math.atan(-coef[0]/coef[2]*math.cos(roll))
         #print(coef)
