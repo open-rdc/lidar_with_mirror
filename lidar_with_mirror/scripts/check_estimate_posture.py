@@ -74,10 +74,10 @@ class EstimatePosture():
             trans_left = self.tfBuffer.lookup_transform('lidar_with_mirror_center_link', left_data.header.frame_id, data.header.stamp)
         except (tf2_ros.LookupException, tf2_ros.ConnectivityException, tf2_ros.ExtrapolationException):
             return
-        try:
-            trans = self.tfBuffer.lookup_transform('odom', 'lidar_with_mirror_center_link', data.header.stamp)
-        except (tf2_ros.LookupException, tf2_ros.ConnectivityException, tf2_ros.ExtrapolationException):
-            return
+        #try:
+        #    trans = self.tfBuffer.lookup_transform('odom', 'lidar_with_mirror_center_link', data.header.stamp)
+        #except (tf2_ros.LookupException, tf2_ros.ConnectivityException, tf2_ros.ExtrapolationException):
+        #    return
         right_pc_base = do_transform_cloud(right_pc, trans_right)
         left_pc_base  = do_transform_cloud(left_pc , trans_left )
         self.pub_pc_right.publish(right_pc_base)
@@ -114,15 +114,16 @@ class EstimatePosture():
         t.child_frame_id = "lidar_with_mirror_estimated_link"
         t.transform.translation.x = 0
         t.transform.translation.y = 0
-        t.transform.translation.z = coef[3]/coef[2] - 0.3
+        t.transform.translation.z = coef[3]/coef[2]
         roll  = math.atan(coef[1]/coef[2])
         pitch = math.atan(-coef[0]/coef[2]*math.cos(roll))
         #print(coef)
         #print("roll: "+str(roll)+" ,pitch: "+str(pitch))
-        quaternion = trans.transform.rotation
-        e = tf.transformations.euler_from_quaternion((quaternion.x, quaternion.y, quaternion.z, quaternion.w))
-        print("estimated, "+str(roll)+", "+str(pitch)+", ground truth, "+str(e[0])+", "+str(e[1]))
-        q = tf.transformations.quaternion_from_euler(-roll, pitch+math.pi/9, 0)
+        #quaternion = trans.transform.rotation
+        #e = tf.transformations.euler_from_quaternion((quaternion.x, quaternion.y, quaternion.z, quaternion.w))
+        #print("estimated, "+str(roll)+", "+str(pitch)+", ground truth, "+str(e[0])+", "+str(e[1]))
+        print("estimated, "+str(roll)+", "+str(pitch)+", "+str(t.transform.translation.z))
+        q = tf.transformations.quaternion_from_euler(-roll, pitch, 0)
         t.transform.rotation.x = q[0]
         t.transform.rotation.y = q[1]
         t.transform.rotation.z = q[2]

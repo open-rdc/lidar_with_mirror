@@ -76,7 +76,7 @@ class EstimatePosture():
         except (tf2_ros.LookupException, tf2_ros.ConnectivityException, tf2_ros.ExtrapolationException):
             return
         try:
-            trans = self.tfBuffer.lookup_transform('odom', 'lidar_with_mirror_center_link', data.header.stamp)
+            trans = self.tfBuffer.lookup_transform('world', 'lidar_with_mirror_center_link', data.header.stamp)
         except (tf2_ros.LookupException, tf2_ros.ConnectivityException, tf2_ros.ExtrapolationException):
             return
         right_pc_base = do_transform_cloud(right_pc, trans_right)
@@ -115,7 +115,7 @@ class EstimatePosture():
         t.child_frame_id = "lidar_with_mirror_estimated_link"
         t.transform.translation.x = 0
         t.transform.translation.y = 0
-        t.transform.translation.z = coef[3]/coef[2] - 0.3
+        t.transform.translation.z = coef[3]/coef[2]
         roll  = math.atan(coef[1]/coef[2])
         pitch = math.atan(-coef[0]/coef[2]*math.cos(roll))
         #print(coef)
