@@ -20,8 +20,8 @@ class EstimatePosture():
         try:
             self.mirror_distance   = rospy.get_param("/lidar_with_mirror/mirror_distance"  , 0.1         )
             self.mirror_roll_angle = rospy.get_param("/lidar_with_mirror/mirror_roll_angle",  math.pi  /3)
-            self.scan_front_begin  = rospy.get_param("/lidar_with_mirror/scan_front_begin" , -math.pi  /3 + 0.01)
-            self.scan_front_end    = rospy.get_param("/lidar_with_mirror/scan_front_end"   ,  math.pi  /3 - 0.01)
+            self.scan_front_begin  = rospy.get_param("/lidar_with_mirror/scan_front_begin" , -math.pi  /3 + 0.7)
+            self.scan_front_end    = rospy.get_param("/lidar_with_mirror/scan_front_end"   ,  math.pi  /3 - 0.7)
             self.scan_left_begin   = rospy.get_param("/lidar_with_mirror/scan_left_begin"  ,  math.pi  /3 + 0.35)
             self.scan_left_end     = rospy.get_param("/lidar_with_mirror/scan_left_end"    ,  math.pi*2/3       )
             self.scan_right_begin  = rospy.get_param("/lidar_with_mirror/scan_right_begin" , -math.pi*2/3       )
@@ -30,9 +30,9 @@ class EstimatePosture():
             rospy.loginfo("param load error")
 
         self.sub_scan = rospy.Subscriber('/lidar_with_mirror_scan', LaserScan, self.callback)
-        self.pub_scan_front = rospy.Publisher('scan_front', LaserScan, queue_size=1)
-        self.pub_scan_right = rospy.Publisher('scan_right', LaserScan, queue_size=1)
-        self.pub_scan_left  = rospy.Publisher('scan_left' , LaserScan, queue_size=1)
+        self.pub_scan_front = rospy.Publisher('/scan_front', LaserScan, queue_size=1)
+        self.pub_scan_right = rospy.Publisher('/scan_right', LaserScan, queue_size=1)
+        self.pub_scan_left  = rospy.Publisher('/scan_left' , LaserScan, queue_size=1)
         self.lp = lg.LaserProjection()
         self.pub_pc_right = rospy.Publisher("point_cloud_right", PointCloud2, queue_size=1)
         self.pub_pc_left  = rospy.Publisher("point_cloud_left" , PointCloud2, queue_size=1)
@@ -110,12 +110,12 @@ class EstimatePosture():
         t.child_frame_id = "lidar_with_mirror_estimated_link"
         t.transform.translation.x = 0
         t.transform.translation.y = 0
-        t.transform.translation.z = coef[3]/coef[2] - 0.56       #### 0.6 = lidar height form urdf 
+        t.transform.translation.z = coef[3]/coef[2] + 0.75       #### 0.6 = lidar height form urdf 
         pitch = math.atan(-coef[0]/coef[2])
         roll  = math.atan(-coef[1]/coef[2])
         print(coef)
         print("roll: "+str(roll)+" ,pitch: "+str(pitch))
-        q = tf.transformations.quaternion_from_euler(-roll, pitch+math.pi/9, 0)
+        q = tf.transformations.quaternion_from_euler(-roll+math.pi, -pitch-math.pi/9, 0)
         t.transform.rotation.x = q[0]
         t.transform.rotation.y = q[1]
         t.transform.rotation.z = q[2]
@@ -125,7 +125,8 @@ class EstimatePosture():
         #LiDARの座標から正面のLiDARの位置を検出
         front_pc = self.lp.projectLaser(front_data)
         front_pc.header.frame_id = "lidar_with_mirror_estimated_link"
-        self.pub_transformed_pc_front.publish(front_pc)
+        front_data.header.frame_id ="lidar_with_mirror_center_link"
+        self.pub_scan_front.publish(front_data)
 
 #   trim_scan_data
 #   スキャンデータから取得角度に基づいてターゲット範囲のスキャンデータを取り出す
