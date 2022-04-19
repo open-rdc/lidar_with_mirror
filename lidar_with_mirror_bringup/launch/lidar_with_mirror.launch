@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+
+<launch>
+    <param name="robot_description" command="$(find xacro)/xacro.py '$(find lidar_with_mirror_description)/urdf/lidar_with_mirror.urdf.xacro'"/>
+  
+    <!-- Load joint controller configurations from YAML file to parameter server -->
+    <rosparam file="$(find icart_mini_control)/config/icart_mini_control.yaml" command="load"/>
+    <rosparam file="$(find lidar_with_mirror_control)/config/lidar_with_mirror_control.yaml" command="load"/>
+
+    <!-- convert joint states to TF transforms for rviz, etc -->
+    <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" respawn="false" output="screen"/>
+
+</launch>
+
