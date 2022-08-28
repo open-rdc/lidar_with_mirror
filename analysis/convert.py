@@ -152,6 +152,7 @@ def update(num):
     left_pitch_angle = math.asin(left_a*z/left_b)
     left_roll_angle = math.asin(math.tan(left_pitch_angle)/left_a)
     #print(str(num+1)+", "+str(z)+", "+str(left_a)+", "+str(left_b)+", "+str(right_a)+", "+str(right_b)+", "+str(pitch_angle)+", "+str(roll_angle))
+    print(str(num+1)+", "+str(z)+", "+str(pitch_angle)+", "+str(roll_angle)+", "+str(right_pitch_angle)+", "+str(right_roll_angle)+", "+str(left_pitch_angle)+", "+str(left_roll_angle))
     left_euler = np.array([left_pitch_angle, left_roll_angle, 0])
     left_rot = Rotation.from_euler('YXZ', left_euler)
     left_height = []
