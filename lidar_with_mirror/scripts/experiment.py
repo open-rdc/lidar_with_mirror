@@ -3,8 +3,6 @@ from __future__ import print_function
 import roslib
 roslib.load_manifest('lidar_with_mirror')
 import rospy
-from sensor_msgs.msg import LaserScan
-from std_srvs.srv import Empty
 from std_msgs.msg import Float64
 import math
 import time
@@ -12,16 +10,16 @@ import time
 class move_lidar:
     def __init__(self):
         rospy.init_node('move_lidar_node', anonymous=True)
-        self.lidar_with_mirror_mirror1_pub   = rospy.Publisher('/lidar_with_mirror_mirror1_controller/command'  , Float64, queue_size=1)
-        self.lidar_with_mirror_mirror2_pub   = rospy.Publisher('/lidar_with_mirror_mirror2_controller/command'  , Float64, queue_size=1)
-        self.lidar_with_mirror_prismatic_pub = rospy.Publisher('/lidar_with_mirror_prismatic_controller/command', Float64, queue_size=1)
-        self.lidar_with_mirror_pitch_pub     = rospy.Publisher('/lidar_with_mirror_pitch_controller/command'    , Float64, queue_size=1)
-        self.lidar_with_mirror_roll_pub      = rospy.Publisher('/lidar_with_mirror_roll_controller/command'     , Float64, queue_size=1)
-        self.caster_front_pub                = rospy.Publisher('/caster_front_controller/command'               , Float64, queue_size=1)
-        self.wheel_hinge_pub                 = rospy.Publisher('/wheel_hinge_controller/command'                , Float64, queue_size=1)
+        self.lidar_with_mirror_mirror1_roll_pub = rospy.Publisher('/lidar_with_mirror_mirror1_roll_controller/command', Float64, queue_size=1)
+        self.lidar_with_mirror_mirror2_roll_pub = rospy.Publisher('/lidar_with_mirror_mirror2_roll_controller/command', Float64, queue_size=1)
+        self.lidar_with_mirror_prismatic_pub    = rospy.Publisher('/lidar_with_mirror_prismatic_controller/command'   , Float64, queue_size=1)
+        self.lidar_with_mirror_pitch_pub        = rospy.Publisher('/lidar_with_mirror_pitch_controller/command'       , Float64, queue_size=1)
+        self.lidar_with_mirror_roll_pub         = rospy.Publisher('/lidar_with_mirror_roll_controller/command'        , Float64, queue_size=1)
+        self.caster_front_pub                   = rospy.Publisher('/caster_front_controller/command'                  , Float64, queue_size=1)
+        self.wheel_hinge_pub                    = rospy.Publisher('/wheel_hinge_controller/command'                   , Float64, queue_size=1)
         time.sleep(0.5)
-        self.lidar_with_mirror_mirror1_pub.publish(0.0)
-        self.lidar_with_mirror_mirror2_pub.publish(0.0)
+        self.lidar_with_mirror_mirror1_roll_pub.publish(0.0)
+        self.lidar_with_mirror_mirror2_roll_pub.publish(0.0)
         self.lidar_with_mirror_prismatic_pub.publish(0.0)
         self.lidar_with_mirror_pitch_pub.publish(0.0)
         self.lidar_with_mirror_roll_pub.publish(0.0)
@@ -65,4 +63,3 @@ if __name__ == '__main__':
         if not ml.loop():
             break
         r.sleep()
-

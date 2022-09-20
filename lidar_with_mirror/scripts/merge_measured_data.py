@@ -5,7 +5,6 @@ roslib.load_manifest('lidar_with_mirror')
 import rospy
 from sensor_msgs.msg import LaserScan
 import copy
-import time
 
 class merge_measured_data_node:
     def __init__(self):

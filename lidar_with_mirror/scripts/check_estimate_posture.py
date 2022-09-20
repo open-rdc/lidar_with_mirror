@@ -117,8 +117,6 @@ class EstimatePosture():
         t.transform.translation.z = coef[3]/coef[2] - 0.3
         roll  = math.atan(coef[1]/coef[2])
         pitch = math.atan(-coef[0]/coef[2]*math.cos(roll))
-        #print(coef)
-        #print("roll: "+str(roll)+" ,pitch: "+str(pitch))
         quaternion = trans.transform.rotation
         e = tf.transformations.euler_from_quaternion((quaternion.x, quaternion.y, quaternion.z, quaternion.w))
         print("estimated, "+str(roll)+", "+str(pitch)+", ground truth, "+str(e[0])+", "+str(e[1]))

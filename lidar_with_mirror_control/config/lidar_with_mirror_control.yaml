@@ -6,11 +6,11 @@ lidar_with_mirror_roll_controller:
     type  : position_controllers/JointPositionController
     joint : lidar_with_mirror_roll_joint
 
-lidar_with_mirror_mirror1_controller:
+lidar_with_mirror_mirror1_roll_controller:
     type  : position_controllers/JointPositionController
     joint : lidar_with_mirror_mirror1_roll_joint
 
-lidar_with_mirror_mirror2_controller:
+lidar_with_mirror_mirror2_roll_controller:
     type  : position_controllers/JointPositionController
     joint : lidar_with_mirror_mirror2_roll_joint
 
