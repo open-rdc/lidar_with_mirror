@@ -13,7 +13,7 @@ orne-boxの環境が構築されていれば，ビルドできると思います
 roslaunch lidar_with_mirror_bringup lidar_with_mirror_sim.launch
 ```
 
-２）センサの姿勢の変更  
+２）センサの姿勢の変更（動作確認用）  
 ```
 rosrun lidar_with_mirror demo_change_angle.py
 ```
@@ -26,7 +26,10 @@ rosrun lidar_with_mirror demo_change_angle.py
 
 ### 実験
 
-`experiment.py`を変更して，ロール方向もしくはピッチ方向にセンサを傾けるように変更
+`check_estimate_posture.py`　姿勢の推定
+`check_ground_height.py` 
+
+`experiment.py`　を変更して，ロール方向もしくはピッチ方向にセンサを傾けるように変更
 
 推定した姿勢の誤算の検証
 ```
