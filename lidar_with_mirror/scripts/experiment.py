@@ -25,7 +25,7 @@ class move_lidar:
         self.lidar_with_mirror_roll_pub.publish(0.0)
         self.caster_front_pub.publish(0.0)
         self.wheel_hinge_pub.publish(0.0)
-        self.seq_no = 2
+        self.seq_no = 0
         self.prev_seq_no = -1
 
     def loop(self):
@@ -41,15 +41,17 @@ class move_lidar:
             self.lidar_with_mirror_roll_pub.publish(self.angle_deg)
             print("roll angle: "+str(self.angle_deg))
             if self.angle_deg >= math.pi/30:
-                self.seq_no = 100
+                self.lidar_with_mirror_roll_pub.publish(0.0)
+                self.seq_no = 1
         elif self.seq_no == 1:
             if self.is_first:
-                self.angle_deg = -math.pi/18 - math.pi/9/10
-            self.angle_deg += math.pi/9/10
+                self.angle_deg = -math.pi/18 - math.pi/18/5
+            self.angle_deg += math.pi/18/5
             self.lidar_with_mirror_pitch_pub.publish(self.angle_deg)
             print("pitch angle: "+str(self.angle_deg))
-            if self.angle_deg >= math.pi/9:
-                self.seq_no = 100
+            if self.angle_deg >= math.pi/18:
+                self.lidar_with_mirror_pitch_pub.publish(0.0)
+                self.seq_no = 2
         elif self.seq_no == 2:
             if self.is_first:
                 self.height = -0.05
@@ -64,7 +66,7 @@ class move_lidar:
 
 if __name__ == '__main__':
     ml = move_lidar()
-    DURATION = 12
+    DURATION = 1
     r = rospy.Rate(1.0 / DURATION)
     while not rospy.is_shutdown():
         if not ml.loop():
