@@ -25,8 +25,7 @@ class move_lidar:
         self.lidar_with_mirror_roll_pub.publish(0.0)
         self.caster_front_pub.publish(0.0)
         self.wheel_hinge_pub.publish(0.0)
-        self.seq_no = 0 #roll
-        #self.seq_no = 1 #pitch
+        self.seq_no = 2
         self.prev_seq_no = -1
 
     def loop(self):
@@ -50,6 +49,14 @@ class move_lidar:
             self.lidar_with_mirror_pitch_pub.publish(self.angle_deg)
             print("pitch angle: "+str(self.angle_deg))
             if self.angle_deg >= math.pi/9:
+                self.seq_no = 100
+        elif self.seq_no == 2:
+            if self.is_first:
+                self.height = -0.05
+            self.height += 0.01
+            self.caster_front_pub.publish(self.height)
+            print("caster: "+str(self.height))
+            if self.height >= 0.05:
                 self.seq_no = 100
         elif self.seq_no == 100:
             return False

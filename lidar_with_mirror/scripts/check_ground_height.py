@@ -68,11 +68,11 @@ class EstimatePosture():
         right_pc = self.lp.projectLaser(right_data)
         left_pc  = self.lp.projectLaser(left_data)
         try:
-            trans_right = self.tfBuffer.lookup_transform('lidar_with_mirror_prismatic_link', right_data.header.frame_id, data.header.stamp)
+            trans_right = self.tfBuffer.lookup_transform('lidar_with_mirror_center_link', right_data.header.frame_id, data.header.stamp)
         except (tf2_ros.LookupException, tf2_ros.ConnectivityException, tf2_ros.ExtrapolationException):
             return
         try:
-            trans_left = self.tfBuffer.lookup_transform('lidar_with_mirror_prismatic_link', left_data.header.frame_id, data.header.stamp)
+            trans_left = self.tfBuffer.lookup_transform('lidar_with_mirror_center_link', left_data.header.frame_id, data.header.stamp)
         except (tf2_ros.LookupException, tf2_ros.ConnectivityException, tf2_ros.ExtrapolationException):
             return
         try:
@@ -111,30 +111,32 @@ class EstimatePosture():
         br = tf2_ros.TransformBroadcaster()
         t = TransformStamped()
         t.header.stamp = data.header.stamp
-        t.header.frame_id = "lidar_with_mirror_prismatic_link"
+        t.header.frame_id = "odom"
         t.child_frame_id = "lidar_with_mirror_estimated_link"
         t.transform.translation.x = 0
         t.transform.translation.y = 0
-        t.transform.translation.z = coef[3]/coef[2] - 0.3
+        height = coef[3]/coef[2]
+        t.transform.translation.z = height
         roll  = math.atan(coef[1]/coef[2])
         pitch = math.atan(-coef[0]/coef[2]*math.cos(roll))
-        #print(coef)
-        #print("roll: "+str(roll)+" ,pitch: "+str(pitch))
-        quaternion = trans.transform.rotation
-        e = tf.transformations.euler_from_quaternion((quaternion.x, quaternion.y, quaternion.z, quaternion.w))
-        #print("estimated, "+str(roll)+", "+str(pitch)+", ground truth, "+str(e[0])+", "+str(e[1]))
-        q = tf.transformations.quaternion_from_euler(-roll, pitch+math.pi/9, 0)
+        q = tf.transformations.quaternion_from_euler(-roll, pitch, 0)
         t.transform.rotation.x = q[0]
         t.transform.rotation.y = q[1]
         t.transform.rotation.z = q[2]
         t.transform.rotation.w = q[3]
         br.sendTransform(t)
 
+        # 真値の計算（比較のため）
+        quaternion = trans.transform.rotation
+        h = trans.transform.translation.z
+        e = tf.transformations.euler_from_quaternion((quaternion.x, quaternion.y, quaternion.z, quaternion.w))
+        #print("roll_pitch_height_estimated, "+str(roll)+", "+str(pitch)+", "+str(height)+", ground truth, "+str(e[0])+", "+str(e[1])+", "+str(h))
+
         #LiDARの座標から正面のLiDARの位置を検出
         front_pc = self.lp.projectLaser(front_data)
         front_pc.header.frame_id = "lidar_with_mirror_estimated_link"
         self.pub_transformed_pc_front.publish(front_pc)
-        pc_base  = do_transform_cloud(front_pc , trans)
+        pc_base  = do_transform_cloud(front_pc , t)
         pc = []
         for p in pc2.read_points(pc_base, skip_nans=True, field_names=("x", "y", "z")):
             pc.append(p[2])

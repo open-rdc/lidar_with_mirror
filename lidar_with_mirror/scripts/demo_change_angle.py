@@ -82,16 +82,16 @@ class demo_change_angle:
             self.position += 0.01
             self.lidar_with_mirror_mirror1_prismatic_pub.publish(self.position)
             self.lidar_with_mirror_mirror1_prismatic2_pub.publish(self.position)
-            self.lidar_with_mirror_mirror2_prismatic_pub.publish(-self.position)
+            self.lidar_with_mirror_mirror2_prismatic_pub.publish(self.position)
             self.lidar_with_mirror_mirror2_prismatic2_pub.publish(self.position)
             print("mirror1_2_prismatic: "+str(self.position))
-            if self.position >= 1.0:
+            if self.position >= 0.2:
                 self.seq_no += 1
         elif self.seq_no == 5:
             self.position -= 0.01
             self.lidar_with_mirror_mirror1_prismatic_pub.publish(self.position)
             self.lidar_with_mirror_mirror1_prismatic2_pub.publish(self.position)
-            self.lidar_with_mirror_mirror2_prismatic_pub.publish(-self.position)
+            self.lidar_with_mirror_mirror2_prismatic_pub.publish(self.position)
             self.lidar_with_mirror_mirror2_prismatic2_pub.publish(self.position)
             print("mirror1_2_prismatic: "+str(self.position))
             if self.position <= 0.0:

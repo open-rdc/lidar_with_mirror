@@ -234,7 +234,7 @@
   <link name="lidar_with_mirror_prismatic_link">
     <inertial>
       <origin xyz="0 0 0" />
-      <mass value="0.2" />
+      <mass value="0.01" />
       <inertia ixx="0.1" ixy="0.0" ixz="0.0" iyy="0.1" iyz="0.0" izz="0.1" />
     </inertial>
   </link>
@@ -249,7 +249,7 @@
   <link name="lidar_with_mirror_pitch_link">
     <inertial>
       <origin xyz="0 0 0" />
-      <mass value="0.2" />
+      <mass value="0.01" />
       <inertia ixx="0.1" ixy="0.0" ixz="0.0" iyy="0.1" iyz="0.0" izz="0.1" />
     </inertial>
   </link>
@@ -264,7 +264,7 @@
   <link name="lidar_with_mirror_roll_link">
     <inertial>
       <origin xyz="0 0 0" />
-      <mass value="0.2" />
+      <mass value="0.01" />
       <inertia ixx="0.1" ixy="0.0" ixz="0.0" iyy="0.1" iyz="0.0" izz="0.1" />
     </inertial>
   </link>
@@ -347,13 +347,13 @@
     <parent link="lidar_with_mirror_center_link"/>
     <child link="lidar_with_mirror_mirror2_prismatic_link"/>
     <origin xyz="0 ${-len} 0" rpy="0 0 0"/>
-    <axis xyz="0 1 0"/>
+    <axis xyz="0 -1 0"/>
     <limit effort="100" velocity="100.0" lower="-1" upper="1" />
   </joint>
   <link name="lidar_with_mirror_mirror2_prismatic_link">
     <inertial>
       <origin xyz="0 0 0" />
-      <mass value="0.2" />
+      <mass value="0.01" />
       <inertia ixx="0.1" ixy="0.0" ixz="0.0" iyy="0.1" iyz="0.0" izz="0.1" />
     </inertial>
   </link>
@@ -383,7 +383,7 @@
   <link name="lidar_with_mirror_mirror2_roll_link">
     <inertial>
       <origin xyz="0 0 0" />
-      <mass value="0.2" />
+      <mass value="0.01" />
       <inertia ixx="0.1" ixy="0.0" ixz="0.0" iyy="0.1" iyz="0.0" izz="0.1" />
     </inertial>
   </link>
