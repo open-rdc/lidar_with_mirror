@@ -113,9 +113,9 @@ class EstimatePosture():
         t.header.stamp = data.header.stamp
         t.header.frame_id = "odom"
         t.child_frame_id = "lidar_with_mirror_estimated_link"
-        t.transform.translation.x = 0
-        t.transform.translation.y = 0
-        height = coef[3]/coef[2]
+        t.transform.translation.x = trans.transform.translation.x # for debug
+        t.transform.translation.y = trans.transform.translation.y # for debug
+        height = math.fabs(coef[3])/math.sqrt(coef[0]**2+coef[1]**2+coef[2]**2)
         t.transform.translation.z = height
         roll  = math.atan(coef[1]/coef[2])
         pitch = math.atan(-coef[0]/coef[2]*math.cos(roll))
@@ -141,6 +141,10 @@ class EstimatePosture():
         for p in pc2.read_points(pc_base, skip_nans=True, field_names=("x", "y", "z")):
             pc.append(p[2])
         print(str(e[0])+", "+str(e[1])+", "+str(mean(pc))+", "+str(stdev(pc)))
+        #right_pc_base.header.frame_id = "lidar_with_mirror_estimated_link"
+        #left_pc_base.header.frame_id = "lidar_with_mirror_estimated_link"
+        #self.pub_pc_right.publish(right_pc_base)
+        #self.pub_pc_left.publish(left_pc_base)
 
 #   trim_scan_data
 #   スキャンデータから取得角度に基づいてターゲット範囲のスキャンデータを取り出す
