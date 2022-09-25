@@ -72,12 +72,19 @@ class CalibrateMirrorPose():
             del res_y[-1]
             del res_y[-1]
         return res_x, res_y
+    def line_detect(self, list_x, list_y, a, b, threshold):
+        res_x, res_y = [], []
+        for x, y in zip(list_x, list_y):
+            if self.dist_from_line(x, y, a, b) < threshold:
+                res_x.append(x)
+                res_y.append(y)
+        return res_x, res_y
 
     def callbackScan(self, data):
         # Trimming scanned data within a specified range
         front_data = self.trim_scan_data(data, self.scan_front_begin, self.scan_front_end)
-        right_data = self.trim_scan_data(data, self.scan_right_begin, self.scan_right_end)
         left_data  = self.trim_scan_data(data, self.scan_left_begin , self.scan_left_end )
+        right_data = self.trim_scan_data(data, self.scan_right_begin, self.scan_right_end)
 
         # Calculate posture of sensor
         na = int(0.1 / data.angle_increment)
@@ -95,16 +102,43 @@ class CalibrateMirrorPose():
         roll_angle = math.asin(math.tan(pitch_angle) / front_a)
         z = - front_b * math.sin(roll_angle) * math.cos(pitch_angle)
 
+        # 真値の計算（gazeboのみ，比較のため）
         try:
             trans = self.tfBuffer.lookup_transform('odom', 'lidar_with_mirror_center_link', data.header.stamp)
         except (tf2_ros.LookupException, tf2_ros.ConnectivityException, tf2_ros.ExtrapolationException):
             return
-        # 真値の計算（比較のため）
         quaternion = trans.transform.rotation
         z_t = trans.transform.translation.z
         e = tf.transformations.euler_from_quaternion((quaternion.x, quaternion.y, quaternion.z, quaternion.w))
         roll_t, pitch_t = e[0], e[1]
-        print("measure_roll_pitch_height, "+str(roll_angle)+", "+str(pitch_angle)+", "+str(z)+", true, "+str(roll_t)+", "+str(pitch_t)+", "+str(z_t))
+        #print("measure_roll_pitch_height, "+str(roll_angle)+", "+str(pitch_angle)+", "+str(z)+", true, "+str(roll_t)+", "+str(pitch_t)+", "+str(z_t))
+
+        # Calculate left mirror pose
+        left_pc = self.lp.projectLaser(left_data)
+        left_x, left_y = [], []
+        for p in pc2.read_points(left_pc, skip_nans=True, field_names=("x", "y", "z")):
+            left_x.append(p[0])
+            left_y.append(p[1])
+        n = len(left_x) - 1
+        left_a0, left_b0 = np.polyfit(left_x[:na] + left_x[n - na:n], left_y[:na] + left_y[n - na:n], 1)
+        left_line_x, left_line_y = self.line_detect(left_x, left_y, left_a0, left_b0, 0.01)
+        left_a, left_b = np.polyfit(left_line_x, left_line_y, 1)
+        left_obs_x, left_obs_y = self.obstacle_detect(left_x, left_y, left_a, left_b, 0.1)
+        nc = len(left_obs_x)/2
+        #left_obs_ave_x, left_obs_ave_y = np.mean(left_obs_x[nc-2:nc+2]), np.mean(left_obs_y[nc-2:nc+2])
+        left_obs_ave_x, left_obs_ave_y = np.mean(left_obs_x), np.mean(left_obs_y)
+        left_obs_b = left_obs_ave_y - left_a * left_obs_ave_x
+        self.dist_from_line(left_obs_ave_x, left_obs_ave_y, left_a, left_b)
+        #print(self.dist_from_line(left_obs_ave_x, left_obs_ave_y, left_a, left_b))
+        left_roll_angle = math.asin(self.obstacle_height / self.dist_from_line(left_obs_ave_x, left_obs_ave_y, left_a, left_b)*math.cos(pitch_t))
+        left_distance = math.fabs(left_b)-z/(math.cos(pitch_angle)*math.cos(roll_angle+left_roll_angle))
+        left_pitch_angle = math.asin(-left_a * (z + left_distance * math.cos(left_roll_angle)) / left_b)
+        #print(str(left_a)+", "+str(left_b))
+        left_yaw_angle = 0
+        #left_pitch_angle = math.asin(left_a * z / left_b)
+        #left_roll_angle = math.asin(math.tan(left_pitch_angle) / left_a)
+        print("measure_left_roll_pitch_dist, "+str(left_roll_angle)+", "+str(left_pitch_angle)+", "+str(roll_angle)+", "+str(pitch_angle)+", "+str(left_distance))
+
 '''
         right_data.header.frame_id = "lidar_with_mirror_right_link"
         left_data.header.frame_id  = "lidar_with_mirror_left_link"
