@@ -56,6 +56,14 @@ class move_lidar:
             if self.is_first:
                 self.height = -0.05
             self.height += 0.01
+            self.lidar_with_mirror_prismatic_pub.publish(self.height)
+            print("caster: "+str(self.height))
+            if self.height >= 0.05:
+                self.seq_no = 100
+        elif self.seq_no == 4:
+            if self.is_first:
+                self.height = -0.05
+            self.height += 0.01
             self.caster_front_pub.publish(self.height)
             print("caster: "+str(self.height))
             if self.height >= 0.05:
@@ -66,7 +74,7 @@ class move_lidar:
 
 if __name__ == '__main__':
     ml = move_lidar()
-    DURATION = 1
+    DURATION = 2
     r = rospy.Rate(1.0 / DURATION)
     while not rospy.is_shutdown():
         if not ml.loop():

@@ -15,7 +15,7 @@ from sensor_msgs.msg import LaserScan
 from sensor_msgs.msg import PointCloud2
 from geometry_msgs.msg import TransformStamped, Quaternion
 
-class EstimatePosture():
+class CalibrateMirrorPose():
     def __init__(self):
         try:
             self.mirror_distance   = rospy.get_param("/lidar_with_mirror/mirror_distance"  , 0.1         )
@@ -26,11 +26,11 @@ class EstimatePosture():
             self.scan_left_end     = rospy.get_param("/lidar_with_mirror/scan_left_end"    ,  math.pi*2/3       )
             self.scan_right_begin  = rospy.get_param("/lidar_with_mirror/scan_right_begin" , -math.pi*2/3       )
             self.scan_right_end    = rospy.get_param("/lidar_with_mirror/scan_right_end"   , -math.pi  /3 - 0.01)
+            self.obstacle_height   = rospy.get_param("/lidar_with_mirror/obstacle_height"  , 0.1)
         except ROSException:
             rospy.loginfo("param load error")
 
         self.sub_scan = rospy.Subscriber('/lidar_with_mirror_scan', LaserScan, self.callbackScan)
-        self.pub_scan_front = rospy.Publisher('scan_front', LaserScan, queue_size=1)
         self.lp = lg.LaserProjection()
         self.tfBuffer = tf2_ros.Buffer()
         self.listener = tf2_ros.TransformListener(self.tfBuffer)
@@ -55,11 +55,57 @@ class EstimatePosture():
         ds = np.dot(r, nv)
         return np.r_[nv, -np.mean(ds)]
 
+    def dist_from_line(self, x, y, a, b):
+        return abs(a * x - y + b) / math.sqrt(a ** 2 + 1)
+
+    def obstacle_detect(self, list_x, list_y, a, b, threshold):
+        res_x, res_y = [], []
+        for x, y in zip(list_x, list_y):
+            if self.dist_from_line(x, y, a, b) > threshold and math.sqrt(x ** 2 + y ** 2) > 0.1:
+                res_x.append(x)
+                res_y.append(y)
+        if len(res_x) >= 4:
+            del res_x[0:1]
+            del res_y[0:1]
+            del res_x[-1]
+            del res_x[-1]
+            del res_y[-1]
+            del res_y[-1]
+        return res_x, res_y
+
     def callbackScan(self, data):
         # Trimming scanned data within a specified range
         front_data = self.trim_scan_data(data, self.scan_front_begin, self.scan_front_end)
         right_data = self.trim_scan_data(data, self.scan_right_begin, self.scan_right_end)
         left_data  = self.trim_scan_data(data, self.scan_left_begin , self.scan_left_end )
+
+        # Calculate posture of sensor
+        na = int(0.1 / data.angle_increment)
+        front_pc = self.lp.projectLaser(front_data)
+        front_x, front_y = [], []
+        for p in pc2.read_points(front_pc, skip_nans=True, field_names=("x", "y", "z")):
+            front_x.append(p[0])
+            front_y.append(p[1])
+        n = len(front_x) - 1
+        front_a, front_b = np.polyfit(front_x[:na] + front_x[n - na:n], front_y[:na] + front_y[n - na:n], 1)
+        front_obs_x, front_obs_y = self.obstacle_detect(front_x, front_y, front_a, front_b, 0.1)
+        front_obs_ave_x, front_obs_ave_y = np.mean(front_obs_x), np.mean(front_obs_y)
+        front_obs_b = front_obs_ave_y - front_a * front_obs_ave_x
+        pitch_angle = math.asin(-self.obstacle_height * front_a / (front_b - front_obs_b))
+        roll_angle = math.asin(math.tan(pitch_angle) / front_a)
+        z = - front_b * math.sin(roll_angle) * math.cos(pitch_angle)
+
+        try:
+            trans = self.tfBuffer.lookup_transform('odom', 'lidar_with_mirror_center_link', data.header.stamp)
+        except (tf2_ros.LookupException, tf2_ros.ConnectivityException, tf2_ros.ExtrapolationException):
+            return
+        # 真値の計算（比較のため）
+        quaternion = trans.transform.rotation
+        z_t = trans.transform.translation.z
+        e = tf.transformations.euler_from_quaternion((quaternion.x, quaternion.y, quaternion.z, quaternion.w))
+        roll_t, pitch_t = e[0], e[1]
+        print("measure_roll_pitch_height, "+str(roll_angle)+", "+str(pitch_angle)+", "+str(z)+", true, "+str(roll_t)+", "+str(pitch_t)+", "+str(z_t))
+'''
         right_data.header.frame_id = "lidar_with_mirror_right_link"
         left_data.header.frame_id  = "lidar_with_mirror_left_link"
 
@@ -108,9 +154,11 @@ class EstimatePosture():
         # Calculate ground height based on estimated LiDAR position
         front_data.header.frame_id = "lidar_with_mirror_estimated_center_link"
         self.pub_scan_front.publish(front_data)
+'''
 
 if __name__ == '__main__':
-    rospy.init_node('estimate_posture')
-    node = EstimatePosture()
+    rospy.init_node('calibrate_mirror_angle')
+    node = CalibrateMirrorPose()
     while not rospy.is_shutdown():
         rospy.sleep(0.1)
+
