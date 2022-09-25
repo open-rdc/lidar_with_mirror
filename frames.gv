@@ -1,0 +1,28 @@
+digraph G {
+"base_link" -> "hokuyo_link"[label="Broadcaster: /orne_box/robot_state_publisher\nAverage rate: 10000.000 Hz\nMost recent transform: 0.000 ( 997.211 sec old)\nBuffer length: 0.000 sec\n"];
+"odom" -> "base_link"[label="Broadcaster: /ekf_localization_node\nAverage rate: 40.260 Hz\nMost recent transform: 997.201 ( 0.010 sec old)\nBuffer length: 2.310 sec\n"];
+"base_link" -> "imu_link"[label="Broadcaster: /orne_box/robot_state_publisher\nAverage rate: 10000.000 Hz\nMost recent transform: 0.000 ( 997.211 sec old)\nBuffer length: 0.000 sec\n"];
+"lidar_with_mirror_roll_link" -> "lidar_with_mirror_center_link"[label="Broadcaster: /orne_box/robot_state_publisher\nAverage rate: 10000.000 Hz\nMost recent transform: 0.000 ( 997.211 sec old)\nBuffer length: 0.000 sec\n"];
+"lidar_with_mirror_pitch_link" -> "lidar_with_mirror_roll_link"[label="Broadcaster: /orne_box/robot_state_publisher\nAverage rate: 10000.000 Hz\nMost recent transform: 0.000 ( 997.211 sec old)\nBuffer length: 0.000 sec\n"];
+"lidar_with_mirror_mirror1_roll_link" -> "lidar_with_mirror_left_link"[label="Broadcaster: /orne_box/robot_state_publisher\nAverage rate: 10000.000 Hz\nMost recent transform: 0.000 ( 997.211 sec old)\nBuffer length: 0.000 sec\n"];
+"lidar_with_mirror_center_link" -> "lidar_with_mirror_mirror1_roll_link"[label="Broadcaster: /orne_box/robot_state_publisher\nAverage rate: 10000.000 Hz\nMost recent transform: 0.000 ( 997.211 sec old)\nBuffer length: 0.000 sec\n"];
+"lidar_with_mirror_center_link" -> "lidar_with_mirror_mirror2_roll_link"[label="Broadcaster: /orne_box/robot_state_publisher\nAverage rate: 10000.000 Hz\nMost recent transform: 0.000 ( 997.211 sec old)\nBuffer length: 0.000 sec\n"];
+"lidar_with_mirror_prismatic_link" -> "lidar_with_mirror_pitch_link"[label="Broadcaster: /orne_box/robot_state_publisher\nAverage rate: 10000.000 Hz\nMost recent transform: 0.000 ( 997.211 sec old)\nBuffer length: 0.000 sec\n"];
+"base_link" -> "lidar_with_mirror_prismatic_link"[label="Broadcaster: /orne_box/robot_state_publisher\nAverage rate: 10000.000 Hz\nMost recent transform: 0.000 ( 997.211 sec old)\nBuffer length: 0.000 sec\n"];
+"lidar_with_mirror_mirror2_roll_link" -> "lidar_with_mirror_right_link"[label="Broadcaster: /orne_box/robot_state_publisher\nAverage rate: 10000.000 Hz\nMost recent transform: 0.000 ( 997.211 sec old)\nBuffer length: 0.000 sec\n"];
+"base_link" -> "wheel_left_link"[label="Broadcaster: /orne_box/robot_state_publisher\nAverage rate: 60.345 Hz\nMost recent transform: 997.202 ( 0.009 sec old)\nBuffer length: 2.320 sec\n"];
+"base_link" -> "wheel_right_link"[label="Broadcaster: /orne_box/robot_state_publisher\nAverage rate: 60.345 Hz\nMost recent transform: 997.202 ( 0.009 sec old)\nBuffer length: 2.320 sec\n"];
+"lidar_with_mirror_centor_link" -> "measurement_plane"[label="Broadcaster: /fitting\nAverage rate: 10.464 Hz\nMost recent transform: 997.166 ( 0.045 sec old)\nBuffer length: 2.198 sec\n"];
+"base_link" -> "left_caster_swivel_link"[label="Broadcaster: /robot_state_publisher\nAverage rate: 10.455 Hz\nMost recent transform: 997.173 ( 0.038 sec old)\nBuffer length: 2.200 sec\n"];
+"left_caster_swivel_link" -> "left_caster_wheel_link"[label="Broadcaster: /robot_state_publisher\nAverage rate: 10.455 Hz\nMost recent transform: 997.173 ( 0.038 sec old)\nBuffer length: 2.200 sec\n"];
+"base_link" -> "right_caster_swivel_link"[label="Broadcaster: /robot_state_publisher\nAverage rate: 10.455 Hz\nMost recent transform: 997.173 ( 0.038 sec old)\nBuffer length: 2.200 sec\n"];
+"right_caster_swivel_link" -> "right_caster_wheel_link"[label="Broadcaster: /robot_state_publisher\nAverage rate: 10.455 Hz\nMost recent transform: 997.173 ( 0.038 sec old)\nBuffer length: 2.200 sec\n"];
+edge [style=invis];
+ subgraph cluster_legend { style=bold; color=black; label ="view_frames Result";
+"Recorded at time: 997.211"[ shape=plaintext ] ;
+ }->"odom";
+edge [style=invis];
+ subgraph cluster_legend { style=bold; color=black; label ="view_frames Result";
+"Recorded at time: 997.211"[ shape=plaintext ] ;
+ }->"lidar_with_mirror_centor_link";
+}

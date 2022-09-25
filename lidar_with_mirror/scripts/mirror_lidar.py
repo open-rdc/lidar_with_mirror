@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
 import rospy
@@ -53,8 +53,8 @@ class MirrorLiDAR():
 
         # スキャンデータを指定した範囲でトリム
         front_data = self.divide_scan_data(data, -1, 1)
-        right_data = self.divide_scan_data(data, 1.6, 2.09)
-        left_data = self.divide_scan_data(data, -2.05, -1.5)
+        right_data = self.divide_scan_data(data, 1.8, 2.09)
+        left_data = self.divide_scan_data(data, -2.05, -1.6)
 
         # 左右の鏡で反射したスキャンデータの近似直線を計算
         func_R, x_R = self.calc_fitting_curve(right_data)
@@ -195,7 +195,7 @@ class MirrorLiDAR():
 
     def calc_marker(self, pos, headertime):
         marker_data = Marker()
-        marker_data.header.frame_id = "laser"
+        marker_data.header.frame_id = "lidar_with_mirror_center_link"
         marker_data.ns = "soiya"
         marker_data.id = 0
         marker_data.header.stamp = headertime
@@ -346,12 +346,12 @@ class MirrorLiDAR():
     def broadcast_pose(self, roll, pitch, hight):
 
         br = tf.TransformBroadcaster()
-        br.sendTransform((0,0,hight),
+        br.sendTransform((0,0,-hight),
                         #lidarは上下逆についているので座標を変換
-                        tf.transformations.quaternion_from_euler(-roll+np.pi,-pitch , 0),
+                        tf.transformations.quaternion_from_euler(roll+np.pi,pitch , 0),
                         rospy.Time.now(),
                         "measurement_plane",
-                        "laser")
+                        "lidar_with_mirror_center_link")
     
 
 

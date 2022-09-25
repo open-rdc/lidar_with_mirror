@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 2.8.3)
 project(lidar_with_mirror_description)
 
 find_package(catkin REQUIRED COMPONENTS
-  icart_mini_description
+
   xacro
 )
 
