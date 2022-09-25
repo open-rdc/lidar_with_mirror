@@ -124,71 +124,33 @@ class CalibrateMirrorPose():
         left_line_x, left_line_y = self.line_detect(left_x, left_y, left_a0, left_b0, 0.01)
         left_a, left_b = np.polyfit(left_line_x, left_line_y, 1)
         left_obs_x, left_obs_y = self.obstacle_detect(left_x, left_y, left_a, left_b, 0.1)
-        nc = len(left_obs_x)/2
-        #left_obs_ave_x, left_obs_ave_y = np.mean(left_obs_x[nc-2:nc+2]), np.mean(left_obs_y[nc-2:nc+2])
         left_obs_ave_x, left_obs_ave_y = np.mean(left_obs_x), np.mean(left_obs_y)
         left_obs_b = left_obs_ave_y - left_a * left_obs_ave_x
         self.dist_from_line(left_obs_ave_x, left_obs_ave_y, left_a, left_b)
-        #print(self.dist_from_line(left_obs_ave_x, left_obs_ave_y, left_a, left_b))
         left_roll_angle = math.asin(self.obstacle_height / self.dist_from_line(left_obs_ave_x, left_obs_ave_y, left_a, left_b)*math.cos(pitch_t))
-        left_distance = math.fabs(left_b)-z/(math.cos(pitch_angle)*math.cos(roll_angle+left_roll_angle))
+        left_distance = math.fabs(left_b)-z/(math.cos(pitch_angle)*math.cos(left_roll_angle))
         left_pitch_angle = math.asin(-left_a * (z + left_distance * math.cos(left_roll_angle)) / left_b)
-        #print(str(left_a)+", "+str(left_b))
-        left_yaw_angle = 0
-        #left_pitch_angle = math.asin(left_a * z / left_b)
-        #left_roll_angle = math.asin(math.tan(left_pitch_angle) / left_a)
-        print("measure_left_roll_pitch_dist, "+str(left_roll_angle)+", "+str(left_pitch_angle)+", "+str(roll_angle)+", "+str(pitch_angle)+", "+str(left_distance))
+        #print("measure_left_roll_pitch_dist, "+str(left_roll_angle+roll_angle)+", "+str(left_pitch_angle-pitch_angle)+", "+str(left_distance))
 
-'''
-        right_data.header.frame_id = "lidar_with_mirror_right_link"
-        left_data.header.frame_id  = "lidar_with_mirror_left_link"
-
-        # Converting to lidar_with_mirror_center_link coordinate
+        # Calculate right mirror pose
         right_pc = self.lp.projectLaser(right_data)
-        left_pc  = self.lp.projectLaser(left_data)
-        try:
-            trans_right = self.tfBuffer.lookup_transform('lidar_with_mirror_center_link', right_data.header.frame_id, data.header.stamp)
-        except (tf2_ros.LookupException, tf2_ros.ConnectivityException, tf2_ros.ExtrapolationException):
-            return
-        try:
-            trans_left = self.tfBuffer.lookup_transform('lidar_with_mirror_center_link', left_data.header.frame_id, data.header.stamp)
-        except (tf2_ros.LookupException, tf2_ros.ConnectivityException, tf2_ros.ExtrapolationException):
-            return
-        try:
-            trans = self.tfBuffer.lookup_transform('odom', 'lidar_with_mirror_center_link', data.header.stamp)
-        except (tf2_ros.LookupException, tf2_ros.ConnectivityException, tf2_ros.ExtrapolationException):
-            return
-        right_pc_base = do_transform_cloud(right_pc, trans_right)
-        left_pc_base  = do_transform_cloud(left_pc , trans_left )
-
-        # Calculate planes from scan data reflected by left and right mirrors
-        pc = []
-        for p in pc2.read_points(right_pc_base, skip_nans=True, field_names=("x", "y", "z")):
-            pc.append(p)
-        for p in pc2.read_points(left_pc_base, skip_nans=True, field_names=("x", "y", "z")):
-            pc.append(p)
-        coef = self.find_plane(pc)
-        
-        # Calculating LiDAR position with respect to the ground
-        br = tf2_ros.TransformBroadcaster()
-        t = TransformStamped()
-        t.header.stamp = data.header.stamp
-        t.header.frame_id = "odom"
-        t.child_frame_id = "lidar_with_mirror_estimated_center_link"
-        t.transform.translation.x = trans.transform.translation.x
-        t.transform.translation.y = trans.transform.translation.y
-        height = math.fabs(coef[3])/math.sqrt(coef[0]**2+coef[1]**2+coef[2]**2)
-        t.transform.translation.z = height
-        roll  = math.atan(coef[1]/coef[2])
-        pitch = math.atan(-coef[0]/coef[2]*math.cos(roll))
-        q = tf.transformations.quaternion_from_euler(roll, pitch, 0)
-        t.transform.rotation = Quaternion(q[0], q[1], q[2], q[3])
-        br.sendTransform(t)
-
-        # Calculate ground height based on estimated LiDAR position
-        front_data.header.frame_id = "lidar_with_mirror_estimated_center_link"
-        self.pub_scan_front.publish(front_data)
-'''
+        right_x, right_y = [], []
+        for p in pc2.read_points(right_pc, skip_nans=True, field_names=("x", "y", "z")):
+            right_x.append(p[0])
+            right_y.append(p[1])
+        n = len(right_x) - 1
+        right_a0, right_b0 = np.polyfit(right_x[:na] + right_x[n - na:n], right_y[:na] + right_y[n - na:n], 1)
+        right_line_x, right_line_y = self.line_detect(right_x, right_y, right_a0, right_b0, 0.01)
+        right_a, right_b = np.polyfit(right_line_x, right_line_y, 1)
+        right_obs_x, right_obs_y = self.obstacle_detect(right_x, right_y, right_a, right_b, 0.1)
+        right_obs_ave_x, right_obs_ave_y = np.mean(right_obs_x), np.mean(right_obs_y)
+        right_obs_b = right_obs_ave_y - right_a * right_obs_ave_x
+        self.dist_from_line(right_obs_ave_x, right_obs_ave_y, right_a, right_b)
+        right_roll_angle = math.asin(self.obstacle_height / self.dist_from_line(right_obs_ave_x, right_obs_ave_y, right_a, right_b)*math.cos(pitch_t))
+        right_distance = math.fabs(right_b)-z/(math.cos(pitch_angle)*math.cos(right_roll_angle))
+        right_pitch_angle = math.asin(-right_a * (z + right_distance * math.cos(right_roll_angle)) / right_b)
+        #print("measure_right_roll_pitch_dist, "+str(right_roll_angle)+", "+str(right_pitch_angle)+", "+str(right_distance))
+        print("left_roll_pitch_dist, "+str(left_roll_angle+roll_angle)+", "+str(left_pitch_angle-pitch_angle)+", "+str(left_distance)+", right_roll_pitch_dist, "+str(right_roll_angle+roll_angle)+", "+str(right_pitch_angle-pitch_angle)+", "+str(right_distance))
 
 if __name__ == '__main__':
     rospy.init_node('calibrate_mirror_angle')
