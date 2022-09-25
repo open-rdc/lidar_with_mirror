@@ -127,7 +127,7 @@ class CalibrateMirrorPose():
         left_obs_ave_x, left_obs_ave_y = np.mean(left_obs_x), np.mean(left_obs_y)
         left_obs_b = left_obs_ave_y - left_a * left_obs_ave_x
         self.dist_from_line(left_obs_ave_x, left_obs_ave_y, left_a, left_b)
-        left_roll_angle = math.asin(self.obstacle_height / self.dist_from_line(left_obs_ave_x, left_obs_ave_y, left_a, left_b)*math.cos(pitch_t))
+        left_roll_angle = math.acos(self.obstacle_height / self.dist_from_line(left_obs_ave_x, left_obs_ave_y, left_a, left_b)*math.cos(pitch_t))
         left_distance = math.fabs(left_b)-z/(math.cos(pitch_angle)*math.cos(left_roll_angle))
         left_pitch_angle = math.asin(-left_a * (z + left_distance * math.cos(left_roll_angle)) / left_b)
         #print("measure_left_roll_pitch_dist, "+str(left_roll_angle+roll_angle)+", "+str(left_pitch_angle-pitch_angle)+", "+str(left_distance))
@@ -146,11 +146,11 @@ class CalibrateMirrorPose():
         right_obs_ave_x, right_obs_ave_y = np.mean(right_obs_x), np.mean(right_obs_y)
         right_obs_b = right_obs_ave_y - right_a * right_obs_ave_x
         self.dist_from_line(right_obs_ave_x, right_obs_ave_y, right_a, right_b)
-        right_roll_angle = math.asin(self.obstacle_height / self.dist_from_line(right_obs_ave_x, right_obs_ave_y, right_a, right_b)*math.cos(pitch_t))
+        right_roll_angle = math.acos(self.obstacle_height / self.dist_from_line(right_obs_ave_x, right_obs_ave_y, right_a, right_b)*math.cos(pitch_t))
         right_distance = math.fabs(right_b)-z/(math.cos(pitch_angle)*math.cos(right_roll_angle))
         right_pitch_angle = math.asin(-right_a * (z + right_distance * math.cos(right_roll_angle)) / right_b)
         #print("measure_right_roll_pitch_dist, "+str(right_roll_angle)+", "+str(right_pitch_angle)+", "+str(right_distance))
-        print("left_roll_pitch_dist, "+str(left_roll_angle+roll_angle)+", "+str(left_pitch_angle-pitch_angle)+", "+str(left_distance)+", right_roll_pitch_dist, "+str(right_roll_angle+roll_angle)+", "+str(right_pitch_angle-pitch_angle)+", "+str(right_distance))
+        print("left_roll_pitch_dist, "+str(left_roll_angle+roll_angle)+", "+str(left_pitch_angle-pitch_angle)+", "+str(left_distance)+", right_roll_pitch_dist, "+str(right_roll_angle+roll_angle)+", "+str(right_pitch_angle-pitch_angle)+", "+str(right_distance)+", true, "+str(pitch_t)+","+str(z_t))
 
 if __name__ == '__main__':
     rospy.init_node('calibrate_mirror_angle')
