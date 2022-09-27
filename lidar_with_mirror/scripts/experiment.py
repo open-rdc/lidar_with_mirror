@@ -33,7 +33,7 @@ class move_lidar:
         self.lidar_with_mirror_roll_pub.publish(0.0)
         self.caster_front_pub.publish(0.0)
         self.wheel_hinge_pub.publish(0.0)
-        self.seq_no = 0
+        self.seq_no = 1
         self.prev_seq_no = -1
 
     def loop(self):

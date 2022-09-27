@@ -138,8 +138,8 @@
           <horizontal>
             <samples>170</samples>
             <resolution>1</resolution>
-            <min_angle>${PI/180*60}</min_angle>
-            <max_angle>${PI/180*120}</max_angle>
+            <min_angle>${-PI/180*120}</min_angle>
+            <max_angle>${-PI/180*60}</max_angle>
           </horizontal>
         </scan>
         <range>
@@ -174,8 +174,8 @@
           <horizontal>
             <samples>170</samples>
             <resolution>1</resolution>
-            <min_angle>${-PI/180*120}</min_angle>
-            <max_angle>${-PI/180*60}</max_angle>
+            <min_angle>${PI/180*60}</min_angle>
+            <max_angle>${PI/180*120}</max_angle>
           </horizontal>
         </scan>
         <range>

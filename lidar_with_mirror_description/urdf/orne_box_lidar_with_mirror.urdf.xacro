@@ -257,7 +257,7 @@
   <joint name="lidar_with_mirror_roll_joint" type="revolute">
     <parent link="lidar_with_mirror_pitch_link"/>
     <child link="lidar_with_mirror_roll_link"/>
-    <origin xyz="0 0 0" rpy="0 0 0"/>
+    <origin xyz="0 0 0" rpy="${PI} 0 0"/>
     <axis xyz="1 0 0"/>
     <limit effort="100" velocity="100.0" lower="${-PI}" upper="${PI}" />
   </joint>
@@ -311,8 +311,8 @@
   <joint name="lidar_with_mirror_mirror1_roll_joint" type="revolute">
     <parent link="lidar_with_mirror_mirror1_yaw_link"/>
     <child link="lidar_with_mirror_mirror1_roll_link"/>
-    <origin xyz="0 0 0" rpy="${-PI/4} 0 0"/>
-    <axis xyz="-1 0 0"/>
+    <origin xyz="0 0 0" rpy="${PI/4} 0 0"/>
+    <axis xyz="1 0 0"/>
     <limit effort="100" velocity="100.0" lower="${-PI}" upper="${PI}" />
   </joint>
   <link name="lidar_with_mirror_mirror1_roll_link">
@@ -339,7 +339,7 @@
   </link>
 
   <xacro:include filename="$(find icart_mini_description)/urdf/sensors/hokuyo.urdf.xacro"/>
-  <xacro:sensor_hokuyo name="lidar_with_mirror_left" parent="lidar_with_mirror_mirror1_prismatic2_link">
+  <xacro:sensor_hokuyo name="lidar_with_mirror_right" parent="lidar_with_mirror_mirror1_prismatic2_link">
     <origin xyz="0 0 0" rpy="0 0 0"/>
   </xacro:sensor_hokuyo>
 
@@ -376,8 +376,8 @@
   <joint name="lidar_with_mirror_mirror2_roll_joint" type="revolute">
     <parent link="lidar_with_mirror_mirror2_yaw_link"/>
     <child link="lidar_with_mirror_mirror2_roll_link"/>
-    <origin xyz="0 0 0" rpy="${PI/4} 0 0"/>
-    <axis xyz="1 0 0"/>
+    <origin xyz="0 0 0" rpy="${-PI/4} 0 0"/>
+    <axis xyz="-1 0 0"/>
     <limit effort="100" velocity="100.0" lower="${-PI}" upper="${PI}" />
   </joint>
   <link name="lidar_with_mirror_mirror2_roll_link">
@@ -404,7 +404,7 @@
   </link>
 
   <xacro:include filename="$(find icart_mini_description)/urdf/sensors/hokuyo.urdf.xacro"/>
-  <xacro:sensor_hokuyo name="lidar_with_mirror_right" parent="lidar_with_mirror_mirror2_prismatic2_link">
+  <xacro:sensor_hokuyo name="lidar_with_mirror_left" parent="lidar_with_mirror_mirror2_prismatic2_link">
     <origin xyz="0 0 0" rpy="0 0 0"/>
   </xacro:sensor_hokuyo>
 
