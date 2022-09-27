@@ -31,7 +31,7 @@ class CalibrateMirrorPose():
         except ROSException:
             rospy.loginfo("param load error")
 
-        self.sub_scan = rospy.Subscriber('/lidar_with_mirror_scan', LaserScan, self.callbackScan)
+        self.sub_scan = rospy.Subscriber('/scan', LaserScan, self.callbackScan)
         self.pub_scan_front = rospy.Publisher('scan_front', LaserScan, queue_size=1)
         self.pub_scan_right = rospy.Publisher('scan_right', LaserScan, queue_size=1)
         self.pub_scan_left  = rospy.Publisher('scan_left' , LaserScan, queue_size=1)

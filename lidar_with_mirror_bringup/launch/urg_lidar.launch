@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+
+<launch>
+  <node name="urg_node" pkg="urg_node" type="urg_node" output="screen">
+    <remap from="scan" to="lidar_with_mirror_scan"/>
+    <param name="ip_address" value=""/>
+    <param name="serial_port" value="/dev/ttyACM0"/>
+    <param name="frame_id" value="laser"/>
+    <param name="calibrate_time" value="true"/>
+    <param name="publish_intensity" value="false"/>
+    <param name="publish_multiecho" value="false"/>
+    <param name="angle_min" value="-2.0943951023932"/>
+    <param name="angle_max" value="2.0943951023932"/>
+  </node>
+</launch>

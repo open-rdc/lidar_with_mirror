@@ -23,10 +23,10 @@ class EstimatePosture():
             self.mirror_roll_angle = rospy.get_param("/lidar_with_mirror/mirror_roll_angle",  math.pi  /4)
             self.scan_front_begin  = rospy.get_param("/lidar_with_mirror/scan_front_begin" , -math.pi  /3 + 0.01)
             self.scan_front_end    = rospy.get_param("/lidar_with_mirror/scan_front_end"   ,  math.pi  /3 - 0.01)
-            self.scan_left_begin   = rospy.get_param("/lidar_with_mirror/scan_left_begin"  ,  math.pi  /3 + 0.01)
-            self.scan_left_end     = rospy.get_param("/lidar_with_mirror/scan_left_end"    ,  math.pi*2/3       )
-            self.scan_right_begin  = rospy.get_param("/lidar_with_mirror/scan_right_begin" , -math.pi*2/3       )
-            self.scan_right_end    = rospy.get_param("/lidar_with_mirror/scan_right_end"   , -math.pi  /3 - 0.01)
+            self.scan_left_begin   = rospy.get_param("/lidar_with_mirror/scan_left_begin"  , -math.pi*2/3       )
+            self.scan_left_end     = rospy.get_param("/lidar_with_mirror/scan_left_end"    , -math.pi  /3 - 0.01)
+            self.scan_right_begin  = rospy.get_param("/lidar_with_mirror/scan_right_begin" ,  math.pi  /3 + 0.01)
+            self.scan_right_end    = rospy.get_param("/lidar_with_mirror/scan_right_end"   ,  math.pi*2/3       )
         except ROSException:
             rospy.loginfo("param load error")
 
@@ -104,7 +104,7 @@ class EstimatePosture():
         t.transform.translation.y = trans.transform.translation.y
         height = math.fabs(coef[3])/math.sqrt(coef[0]**2+coef[1]**2+coef[2]**2)
         t.transform.translation.z = height
-        roll  = math.atan(-coef[1]/coef[2])
+        roll  = math.atan(coef[1]/coef[2])+math.pi
         pitch = math.atan(-coef[0]/coef[2]*math.cos(roll))
         q = tf.transformations.quaternion_from_euler(roll, pitch, 0)
         t.transform.rotation = Quaternion(q[0], q[1], q[2], q[3])

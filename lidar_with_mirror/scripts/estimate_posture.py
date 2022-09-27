@@ -20,17 +20,19 @@ class EstimatePosture():
         try:
             self.mirror_distance   = rospy.get_param("/lidar_with_mirror/mirror_distance"  , 0.1         )
             self.mirror_roll_angle = rospy.get_param("/lidar_with_mirror/mirror_roll_angle",  math.pi  /4)
-            self.scan_front_begin  = rospy.get_param("/lidar_with_mirror/scan_front_begin" , -math.pi  /3 + 0.01)
-            self.scan_front_end    = rospy.get_param("/lidar_with_mirror/scan_front_end"   ,  math.pi  /3 - 0.01)
-            self.scan_left_begin   = rospy.get_param("/lidar_with_mirror/scan_left_begin"  ,  math.pi  /3 + 0.01)
-            self.scan_left_end     = rospy.get_param("/lidar_with_mirror/scan_left_end"    ,  math.pi*2/3       )
-            self.scan_right_begin  = rospy.get_param("/lidar_with_mirror/scan_right_begin" , -math.pi*2/3       )
-            self.scan_right_end    = rospy.get_param("/lidar_with_mirror/scan_right_end"   , -math.pi  /3 - 0.01)
+            self.scan_front_begin  = rospy.get_param("/lidar_with_mirror/scan_front_begin" , -0.70 )
+            self.scan_front_end    = rospy.get_param("/lidar_with_mirror/scan_front_end"   ,  0.70 )
+            self.scan_left_begin   = rospy.get_param("/lidar_with_mirror/scan_left_begin"  , -1.80 ) #-2.00
+            self.scan_left_end     = rospy.get_param("/lidar_with_mirror/scan_left_end"    , -1.05 )
+            self.scan_right_begin  = rospy.get_param("/lidar_with_mirror/scan_right_begin" ,  1.14 )
+            self.scan_right_end    = rospy.get_param("/lidar_with_mirror/scan_right_end"   ,  1.80 ) #2.09
         except ROSException:
             rospy.loginfo("param load error")
 
         self.sub_scan = rospy.Subscriber('/lidar_with_mirror_scan', LaserScan, self.callbackScan)
         self.pub_scan_front = rospy.Publisher('scan_front', LaserScan, queue_size=1)
+        self.pub_pc_right = rospy.Publisher("point_cloud_right", PointCloud2, queue_size=1)
+        self.pub_pc_left  = rospy.Publisher("point_cloud_left" , PointCloud2, queue_size=1)
         self.lp = lg.LaserProjection()
         self.tfBuffer = tf2_ros.Buffer()
         self.listener = tf2_ros.TransformListener(self.tfBuffer)
@@ -58,26 +60,17 @@ class EstimatePosture():
     def callbackScan(self, data):
         # Trimming scanned data within a specified range
         front_data = self.trim_scan_data(data, self.scan_front_begin, self.scan_front_end)
-        right_data = self.trim_scan_data(data, self.scan_right_begin, self.scan_right_end)
         left_data  = self.trim_scan_data(data, self.scan_left_begin , self.scan_left_end )
+        right_data = self.trim_scan_data(data, self.scan_right_begin, self.scan_right_end)
         right_data.header.frame_id = "lidar_with_mirror_right_link"
         left_data.header.frame_id  = "lidar_with_mirror_left_link"
 
         # Converting to lidar_with_mirror_center_link coordinate
         right_pc = self.lp.projectLaser(right_data)
         left_pc  = self.lp.projectLaser(left_data)
-        try:
-            trans_right = self.tfBuffer.lookup_transform('lidar_with_mirror_center_link', right_data.header.frame_id, data.header.stamp)
-        except (tf2_ros.LookupException, tf2_ros.ConnectivityException, tf2_ros.ExtrapolationException):
-            return
-        try:
-            trans_left = self.tfBuffer.lookup_transform('lidar_with_mirror_center_link', left_data.header.frame_id, data.header.stamp)
-        except (tf2_ros.LookupException, tf2_ros.ConnectivityException, tf2_ros.ExtrapolationException):
-            return
-        try:
-            trans = self.tfBuffer.lookup_transform('odom', 'lidar_with_mirror_center_link', data.header.stamp)
-        except (tf2_ros.LookupException, tf2_ros.ConnectivityException, tf2_ros.ExtrapolationException):
-            return
+        trans_right = self.tfBuffer.lookup_transform('lidar_with_mirror_center_link', right_data.header.frame_id, rospy.Time())
+        trans_left = self.tfBuffer.lookup_transform('lidar_with_mirror_center_link', left_data.header.frame_id, rospy.Time())
+        trans = self.tfBuffer.lookup_transform('base_link', 'lidar_with_mirror_center_link',  rospy.Time())
         right_pc_base = do_transform_cloud(right_pc, trans_right)
         left_pc_base  = do_transform_cloud(left_pc , trans_left )
 
@@ -88,18 +81,19 @@ class EstimatePosture():
         for p in pc2.read_points(left_pc_base, skip_nans=True, field_names=("x", "y", "z")):
             pc.append(p)
         coef = self.find_plane(pc)
-        
+        print(coef)
+
         # Calculating LiDAR position with respect to the ground
         br = tf2_ros.TransformBroadcaster()
         t = TransformStamped()
-        t.header.stamp = data.header.stamp
-        t.header.frame_id = "odom"
+        t.header.stamp = rospy.Time.now()
+        t.header.frame_id = "base_link"
         t.child_frame_id = "lidar_with_mirror_estimated_center_link"
         t.transform.translation.x = trans.transform.translation.x
         t.transform.translation.y = trans.transform.translation.y
         height = math.fabs(coef[3])/math.sqrt(coef[0]**2+coef[1]**2+coef[2]**2)
         t.transform.translation.z = height
-        roll  = math.atan(coef[1]/coef[2])
+        roll  = math.atan(coef[1]/coef[2])+math.pi
         pitch = math.atan(-coef[0]/coef[2]*math.cos(roll))
         q = tf.transformations.quaternion_from_euler(roll, pitch, 0)
         t.transform.rotation = Quaternion(q[0], q[1], q[2], q[3])
@@ -108,6 +102,10 @@ class EstimatePosture():
         # Calculate ground height based on estimated LiDAR position
         front_data.header.frame_id = "lidar_with_mirror_estimated_center_link"
         self.pub_scan_front.publish(front_data)
+        left_pc_base.header.frame_id = "lidar_with_mirror_estimated_center_link"
+        right_pc_base.header.frame_id = "lidar_with_mirror_estimated_center_link"
+        self.pub_pc_left.publish(left_pc_base)
+        self.pub_pc_right.publish(right_pc_base)
 
 if __name__ == '__main__':
     rospy.init_node('estimate_posture')
