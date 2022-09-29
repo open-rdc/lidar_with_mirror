@@ -37,6 +37,17 @@ class EstimatePosture():
         self.tfBuffer = tf2_ros.Buffer()
         self.listener = tf2_ros.TransformListener(self.tfBuffer)
 
+        # for hough conversion
+        self.no_bin_the, self.no_bin_rho = 30, 30
+        sin_l, cos_l = [], []
+        step = 2 * math.pi / self.no_bin_the
+        for t in np.arange(step/2, 2 * math.pi, step):
+            sin_l.append(math.sin(t))
+            cos_l.append(math.cos(t))
+        self.sin_t, self.cos_t = np.array(sin_l), np.array(cos_l)
+        self.max_rho = 2
+
+
     def trim_scan_data(self, data, start_angle_rad, end_angle_rad):
         trim_data = copy.deepcopy(data)
         start_angle_rad = max(start_angle_rad, data.angle_min)
@@ -57,6 +68,40 @@ class EstimatePosture():
         ds = np.dot(r, nv)
         return np.r_[nv, -np.mean(ds)]
 
+    def hough(self, list_x, list_y):
+        bin = np.zeros((self.no_bin_the, self.no_bin_rho))
+        for x, y in zip(list_x, list_y):
+            rho = x * self.cos_t + y * self.sin_t
+            for t in range(self.no_bin_the):
+                if (rho[t] > self.max_rho):
+                    print("rho > max_rho rho: "+str(rho[t])+"max_rho: "+str(self.max_rho))
+                    break
+                bin[t][int((rho[t]/self.max_rho*self.no_bin_rho+self.no_bin_rho)/2)] += 1
+        max_angle = bin.argmax() // self.no_bin_rho
+        max_dist = bin.argmax() % self.no_bin_rho
+        return -self.cos_t[max_angle]/self.sin_t[max_angle], 1/self.sin_t[max_angle]*(max_dist-self.no_bin_rho/2)/(self.no_bin_rho/2)*self.max_rho
+    def dist_from_line(self, x, y, a, b):
+        return abs(a * x - y + b) / math.sqrt(a ** 2 + 1)
+    def line_detect(self, list_x, list_y, a, b, threshold):
+        res_x, res_y = [], []
+        for x, y in zip(list_x, list_y):
+            if self.dist_from_line(x, y, a, b) < threshold:
+                res_x.append(x)
+                res_y.append(y)
+        return res_x, res_y
+    def delete_outliers(self, pc):
+        list_x, list_y = [], []
+        for p in pc2.read_points(pc, skip_nans=True, field_names=("x", "y")):
+            list_x.append(p[0])
+            list_y.append(p[1])
+        a, b = self.hough(list_x, list_y)
+        line_x, line_y = self.line_detect(list_x, list_y, a, b, 0.1)
+        points = []
+        for x, y in zip(line_x, line_y):
+            points.append([x, y, 0, 0])
+        ret_pc = pc2.create_cloud(pc.header, pc.fields, points)
+        return ret_pc
+
     def callbackScan(self, data):
         # Trimming scanned data within a specified range
         front_data = self.trim_scan_data(data, self.scan_front_begin, self.scan_front_end)
@@ -68,6 +113,8 @@ class EstimatePosture():
         # Converting to lidar_with_mirror_center_link coordinate
         right_pc = self.lp.projectLaser(right_data)
         left_pc  = self.lp.projectLaser(left_data)
+        #right_pc = self.delete_outliers(right_pc0)
+        #left_pc = self.delete_outliers(left_pc0)
         trans_right = self.tfBuffer.lookup_transform('lidar_with_mirror_center_link', right_data.header.frame_id, rospy.Time())
         trans_left = self.tfBuffer.lookup_transform('lidar_with_mirror_center_link', left_data.header.frame_id, rospy.Time())
         trans = self.tfBuffer.lookup_transform('base_link', 'lidar_with_mirror_center_link',  rospy.Time())
