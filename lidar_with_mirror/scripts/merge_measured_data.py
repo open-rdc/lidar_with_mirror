@@ -5,7 +5,6 @@ roslib.load_manifest('lidar_with_mirror')
 import rospy
 from sensor_msgs.msg import LaserScan
 import copy
-import time
 
 class merge_measured_data_node:
     def __init__(self):
@@ -35,10 +34,10 @@ class merge_measured_data_node:
 
     def merge(self):
         merged_lidar = copy.deepcopy(self.lidar_center)
-        merged_lidar.angle_min = self.lidar_right.angle_min
-        merged_lidar.angle_max = self.lidar_left.angle_max
-        merged_lidar.ranges = self.lidar_right.ranges + self.lidar_center.ranges + self.lidar_left.ranges
-        merged_lidar.intensities = self.lidar_right.intensities + self.lidar_center.intensities + self.lidar_left.intensities
+        merged_lidar.angle_min = self.lidar_left.angle_min
+        merged_lidar.angle_max = self.lidar_right.angle_max
+        merged_lidar.ranges = self.lidar_left.ranges + self.lidar_center.ranges + self.lidar_right.ranges
+        merged_lidar.intensities = self.lidar_left.intensities + self.lidar_center.intensities + self.lidar_right.intensities
         self.merged_lidar_pub.publish(merged_lidar)
         self.lidar_center = None
         self.lidar_left = None

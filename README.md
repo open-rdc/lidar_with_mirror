@@ -13,20 +13,23 @@ orne-boxの環境が構築されていれば，ビルドできると思います
 roslaunch lidar_with_mirror_bringup lidar_with_mirror_sim.launch
 ```
 
-２）センサの姿勢の変更  
+２）センサの姿勢の変更（動作確認用）  
 ```
 rosrun lidar_with_mirror demo_change_angle.py
 ```
 
-３）姿勢の推定（樋高君作成）  
-```
-rosrun lidar_with_mirror mirror_lidar.py
-```
-※左右のセンサの向きを90d度ずらしてから実行する  
+関節配置  
+<img src="https://user-images.githubusercontent.com/5755200/191669025-2a382114-529b-44cf-bc44-abda95df3f5a.png" width="300">
+
+実行の様子  
+[![IMAGE](http://img.youtube.com/vi/xApM7J0YAwk/0.jpg)](https://youtu.be/xApM7J0YAwk)
 
 ### 実験
 
-`experiment.py`を変更して，ロール方向もしくはピッチ方向にセンサを傾けるように変更
+`check_estimate_posture.py`　姿勢の推定
+`check_ground_height.py` 
+
+`experiment.py`　を変更して，ロール方向もしくはピッチ方向にセンサを傾けるように変更
 
 推定した姿勢の誤算の検証
 ```
