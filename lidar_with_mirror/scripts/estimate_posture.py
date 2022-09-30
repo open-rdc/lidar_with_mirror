@@ -20,11 +20,11 @@ class EstimatePosture():
         try:
             self.mirror_distance   = rospy.get_param("/lidar_with_mirror/mirror_distance"  , 0.1         )
             self.mirror_roll_angle = rospy.get_param("/lidar_with_mirror/mirror_roll_angle",  math.pi  /4)
-            self.scan_front_begin  = rospy.get_param("/lidar_with_mirror/scan_front_begin" , -0.7 )
-            self.scan_front_end    = rospy.get_param("/lidar_with_mirror/scan_front_end"   ,  0.7 )#0.7
+            self.scan_front_begin  = rospy.get_param("/lidar_with_mirror/scan_front_begin" , -0.4 )
+            self.scan_front_end    = rospy.get_param("/lidar_with_mirror/scan_front_end"   ,  0.4 )#0.7
             self.scan_left_begin   = rospy.get_param("/lidar_with_mirror/scan_left_begin"  , -1.8 ) #-1.80
-            self.scan_left_end     = rospy.get_param("/lidar_with_mirror/scan_left_end"    , -1.31 )#-1.05 #-1.31
-            self.scan_right_begin  = rospy.get_param("/lidar_with_mirror/scan_right_begin" ,  1.34 )#1.14 #1.34
+            self.scan_left_end     = rospy.get_param("/lidar_with_mirror/scan_left_end"    , -1.05 )#-1.05 #-1.31
+            self.scan_right_begin  = rospy.get_param("/lidar_with_mirror/scan_right_begin" ,  1.14 )#1.14 #1.34
             self.scan_right_end    = rospy.get_param("/lidar_with_mirror/scan_right_end"   ,  1.80 ) #2.09
         except ROSException:
             rospy.loginfo("param load error")
@@ -59,6 +59,11 @@ class EstimatePosture():
         trim_data.intensities = data.intensities[start:end]
         trim_data.angle_min = start_angle_rad
         trim_data.angle_max = end_angle_rad
+        ranges = list(trim_data.ranges)
+        for i,r in enumerate(ranges):
+            if r < 0.9:
+                ranges[i] = np.nan
+        trim_data.ranges = tuple(ranges)
         return trim_data
 
     def find_plane(self, r):
@@ -130,7 +135,7 @@ class EstimatePosture():
             pc.append(p)
         coef, rmd = self.find_plane(pc)
         print(coef, rmd)
-        if rmd < 0.15: #adjust
+        if math.fabs(rmd) < 0.025: #adjust
             self.height = math.fabs(coef[3])/math.sqrt(coef[0]**2+coef[1]**2+coef[2]**2)
             self.roll  = math.atan(coef[1]/coef[2])+math.pi
             self.pitch = math.atan(-coef[0]/coef[2]*math.cos(self.roll))
