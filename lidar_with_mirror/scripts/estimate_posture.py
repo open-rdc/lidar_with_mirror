@@ -19,13 +19,13 @@ class EstimatePosture():
     def __init__(self):
         try:
             self.mirror_distance   = rospy.get_param("/lidar_with_mirror/mirror_distance"  , 0.1         )
-            self.mirror_roll_angle = rospy.get_param("/lidar_with_mirror/mirror_roll_angle",  math.pi  /3)
-            self.scan_front_begin  = rospy.get_param("/lidar_with_mirror/scan_front_begin" , -math.pi  /3 + 0.7)
-            self.scan_front_end    = rospy.get_param("/lidar_with_mirror/scan_front_end"   ,  math.pi  /3 - 0.7)
-            self.scan_left_begin   = rospy.get_param("/lidar_with_mirror/scan_left_begin"  ,  math.pi  /3 + 0.35)
-            self.scan_left_end     = rospy.get_param("/lidar_with_mirror/scan_left_end"    ,  math.pi*2/3       )
-            self.scan_right_begin  = rospy.get_param("/lidar_with_mirror/scan_right_begin" , -math.pi*2/3       )
-            self.scan_right_end    = rospy.get_param("/lidar_with_mirror/scan_right_end"   , -math.pi  /3 - 0.35)
+            self.mirror_roll_angle = rospy.get_param("/lidar_with_mirror/mirror_roll_angle",  math.pi  /4)
+            self.scan_front_begin  = rospy.get_param("/lidar_with_mirror/scan_front_begin" , -0.7 )
+            self.scan_front_end    = rospy.get_param("/lidar_with_mirror/scan_front_end"   ,  0.7 )#0.7
+            self.scan_left_begin   = rospy.get_param("/lidar_with_mirror/scan_left_begin"  , -1.8 ) #-1.80
+            self.scan_left_end     = rospy.get_param("/lidar_with_mirror/scan_left_end"    , -1.31 )#-1.05 #-1.31
+            self.scan_right_begin  = rospy.get_param("/lidar_with_mirror/scan_right_begin" ,  1.34 )#1.14 #1.34
+            self.scan_right_end    = rospy.get_param("/lidar_with_mirror/scan_right_end"   ,  1.80 ) #2.09
         except ROSException:
             rospy.loginfo("param load error")
 
