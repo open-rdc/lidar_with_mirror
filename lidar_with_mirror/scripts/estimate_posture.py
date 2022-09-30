@@ -36,6 +36,7 @@ class EstimatePosture():
         self.lp = lg.LaserProjection()
         self.tfBuffer = tf2_ros.Buffer()
         self.listener = tf2_ros.TransformListener(self.tfBuffer)
+        self.height, self.roll, self.pitch = 0, 0 ,0
 
         # for hough conversion
         self.no_bin_the, self.no_bin_rho = 30, 30
@@ -66,7 +67,7 @@ class EstimatePosture():
         u, s, v = np.linalg.svd(r0)
         nv = v[-1, :]
         ds = np.dot(r, nv)
-        return np.r_[nv, -np.mean(ds)]
+        return np.r_[nv, -np.mean(ds)], s[-1]
 
     def hough(self, list_x, list_y):
         bin = np.zeros((self.no_bin_the, self.no_bin_rho))
@@ -127,8 +128,12 @@ class EstimatePosture():
             pc.append(p)
         for p in pc2.read_points(left_pc_base, skip_nans=True, field_names=("x", "y", "z")):
             pc.append(p)
-        coef = self.find_plane(pc)
-        print(coef)
+        coef, rmd = self.find_plane(pc)
+        print(coef, rmd)
+        if rmd < 0.15: #adjust
+            self.height = math.fabs(coef[3])/math.sqrt(coef[0]**2+coef[1]**2+coef[2]**2)
+            self.roll  = math.atan(coef[1]/coef[2])+math.pi
+            self.pitch = math.atan(-coef[0]/coef[2]*math.cos(self.roll))
 
         # Calculating LiDAR position with respect to the ground
         br = tf2_ros.TransformBroadcaster()
@@ -138,11 +143,8 @@ class EstimatePosture():
         t.child_frame_id = "lidar_with_mirror_estimated_center_link"
         t.transform.translation.x = trans.transform.translation.x
         t.transform.translation.y = trans.transform.translation.y
-        height = math.fabs(coef[3])/math.sqrt(coef[0]**2+coef[1]**2+coef[2]**2)
-        t.transform.translation.z = height
-        roll  = math.atan(coef[1]/coef[2])+math.pi
-        pitch = math.atan(-coef[0]/coef[2]*math.cos(roll))
-        q = tf.transformations.quaternion_from_euler(roll, pitch, 0)
+        t.transform.translation.z = self.height
+        q = tf.transformations.quaternion_from_euler(self.roll, self.pitch, 0)
         t.transform.rotation = Quaternion(q[0], q[1], q[2], q[3])
         br.sendTransform(t)
 
