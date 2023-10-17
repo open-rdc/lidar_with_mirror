@@ -1,13 +1,16 @@
-cmake_minimum_required(VERSION 2.8.3)
+cmake_minimum_required(VERSION 3.5)
 project(lidar_with_mirror_description)
 
-find_package(catkin REQUIRED COMPONENTS
-  icart_mini_description
-  xacro
-)
+# Default to C++14
+if(NOT CMAKE_CXX_STANDARD)
+  set(CMAKE_CXX_STANDARD 14)
+endif()
 
-catkin_package()
+find_package(ament_cmake REQUIRED)
+find_package(xacro REQUIRED)
 
 install(DIRECTORY urdf
-  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+  DESTINATION share/${PROJECT_NAME}/
 )
+
+ament_package()

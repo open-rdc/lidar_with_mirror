@@ -1,10 +1,20 @@
 <?xml version="1.0"?>
-<package format="2">
+<package format="3">
   <name>lidar_with_mirror_navigation_executor</name>
   <version>0.0.0</version>
   <description>The lidar_with_mirror_navigation_executor package</description>
   <maintainer email="yasuo.hayashibara@it-chiba.ac.jp">Yasuo Hayashibara</maintainer>
   <license>TODO</license>
-  <buildtool_depend>catkin</buildtool_depend>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <depend>geometry_msgs</depend>
+  <depend>nav2_behavior_tree</depend>
+  <depend>rclcpp</depend>
+  <depend>action_msgs</depend>
+  <depend>tf2</depend>
+  <depend>tf2_ros</depend>
+  <depend>std_msgs</depend>
+
   <export></export>
 </package>

@@ -1,9 +1,12 @@
-cmake_minimum_required(VERSION 2.8.3)
+cmake_minimum_required(VERSION 3.5)
 project(lidar_with_mirror_control)
-find_package(catkin REQUIRED)
 
-catkin_package()
+if(NOT CMAKE_CXX_STANDARD)
+  set(CMAKE_CXX_STANDARD 14)
+endif()
 
-include_directories(
-  ${catkin_INCLUDE_DIRS}
-)
+find_package(ament_cmake REQUIRED)
+
+include_directories()
+
+ament_package()
