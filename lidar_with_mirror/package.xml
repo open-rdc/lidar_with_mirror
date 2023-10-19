@@ -18,4 +18,9 @@
   <depend>lidar_with_mirror_control</depend>
   <depend>lidar_with_mirror_description</depend>
   <depend>lidar_with_mirror_navigation_executor</depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+
 </package>

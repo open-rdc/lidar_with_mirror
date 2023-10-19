@@ -36,15 +36,12 @@ install(TARGETS
   DESTINATION lib/${PROJECT_NAME}
 )
 
-# Install header files
 install(DIRECTORY include/
   DESTINATION include
 )
 
-# If your package has a "launch" directory for launch files
-# install(DIRECTORY
-#   launch
-#   DESTINATION share/${PROJECT_NAME}
-# )
+install(DIRECTORY scripts
+  DESTINATION share/${PROJECT_NAME}/
+)
 
 ament_package()
