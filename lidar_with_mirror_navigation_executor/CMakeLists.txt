@@ -1,27 +1,26 @@
-cmake_minimum_required(VERSION 2.8.3)
+cmake_minimum_required(VERSION 3.5)
 project(lidar_with_mirror_navigation_executor)
 
-find_package(catkin REQUIRED COMPONENTS
-  move_base_msgs
-  geometry_msgs
-  move_base
-  roscpp
-  actionlib_msgs
-  actionlib
-  tf
-  std_msgs
-)
+if(NOT CMAKE_CXX_STANDARD)
+  set(CMAKE_CXX_STANDARD 14)
+endif()
 
-find_package(PkgConfig)
-pkg_search_module(yaml-cpp REQUIRED yaml-cpp)
-
-catkin_package(
-  #INCLUDE_DIRS include
-  LIBRARIES ${PROJECT_NAME}
-)
+# Find ROS 2 dependencies
+find_package(ament_cmake REQUIRED)
+find_package(geometry_msgs REQUIRED)
+find_package(nav2_behavior_tree REQUIRED) # Assuming you're using Nav2 for navigation
+find_package(rclcpp REQUIRED)
+find_package(action_msgs REQUIRED)
+find_package(tf2 REQUIRED)
+find_package(tf2_ros REQUIRED)
+find_package(std_msgs REQUIRED)
+find_package(yaml-cpp REQUIRED)
 
 include_directories(
-  #include 
-  ${catkin_INCLUDE_DIRS}
+  ${rclcpp_INCLUDE_DIRS}
   ${yaml-cpp_INCLUDE_DIRS}
 )
+
+ament_export_dependencies(rosidl_default_runtime)
+
+ament_package()
