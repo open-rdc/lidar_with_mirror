@@ -40,8 +40,4 @@ install(DIRECTORY include/
   DESTINATION include
 )
 
-install(DIRECTORY scripts
-  DESTINATION share/${PROJECT_NAME}/
-)
-
 ament_package()
