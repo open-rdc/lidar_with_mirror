@@ -8,6 +8,7 @@ endif()
 
 # Find necessary dependencies
 find_package(ament_cmake REQUIRED)
+find_package(ament_cmake_python REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(tf2 REQUIRED)
@@ -38,6 +39,12 @@ install(TARGETS
 
 install(DIRECTORY include/
   DESTINATION include
+)
+
+ament_python_install_package(${PROJECT_NAME})
+
+install(DIRECTORY lidar_with_mirror/
+  DESTINATION lib/${PROJECT_NAME}
 )
 
 ament_package()

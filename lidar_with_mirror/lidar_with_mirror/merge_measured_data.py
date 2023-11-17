@@ -1,36 +1,35 @@
-#!/usr/bin/env python
-from __future__ import print_function
-import roslib
-roslib.load_manifest('lidar_with_mirror')
-import rospy
+#!/usr/bin/env python3
+
+import rclpy
+from rclpy.node import Node
 from sensor_msgs.msg import LaserScan
 import copy
-import time
 
-class merge_measured_data_node:
+class MergeMeasuredDataNode(Node):
     def __init__(self):
-        rospy.init_node('merge_measured_data_node', anonymous=True)
+        super().__init__('merge_measured_data_node')
         self.lidar_center = None
         self.lidar_left = None
         self.lidar_right = None
-        self.merged_lidar_pub = rospy.Publisher("/lidar_with_mirror_scan", LaserScan, queue_size=1)
-        self.lidar_with_mirror_center_sub = rospy.Subscriber("/lidar_with_mirror_scan_center", LaserScan, self.callback_lidar_with_mirror_center)
-        self.lidar_with_mirror_left_sub   = rospy.Subscriber("/lidar_with_mirror_scan_left"  , LaserScan, self.callback_lidar_with_mirror_left  )
-        self.lidar_with_mirror_right_sub  = rospy.Subscriber("/lidar_with_mirror_scan_right" , LaserScan, self.callback_lidar_with_mirror_right )
+        self.merged_lidar_pub = self.create_publisher(LaserScan, '/lidar_with_mirror_scan', 10)
+        self.lidar_with_mirror_center_sub = self.create_subscription(LaserScan, '/lidar_with_mirror_center_scan', self.callback_lidar_with_mirror_center, 10)
+        self.lidar_with_mirror_left_sub = self.create_subscription(LaserScan, '/lidar_with_mirror_left_scan', self.callback_lidar_with_mirror_left, 10)
+        self.lidar_with_mirror_right_sub = self.create_subscription(LaserScan, '/lidar_with_mirror_right_scan', self.callback_lidar_with_mirror_right, 10)
 
     def callback_lidar_with_mirror_center(self, data):
         self.lidar_center = copy.deepcopy(data)
-        if self.lidar_center != None and self.lidar_left != None and self.lidar_right != None:
-            self.merge()
+        self.check_and_merge()
 
     def callback_lidar_with_mirror_left(self, data):
         self.lidar_left = copy.deepcopy(data)
-        if self.lidar_center != None and self.lidar_left != None and self.lidar_right != None:
-            self.merge()
+        self.check_and_merge()
 
     def callback_lidar_with_mirror_right(self, data):
         self.lidar_right = copy.deepcopy(data)
-        if self.lidar_center != None and self.lidar_left != None and self.lidar_right != None:
+        self.check_and_merge()
+
+    def check_and_merge(self):
+        if self.lidar_center is not None and self.lidar_left is not None and self.lidar_right is not None:
             self.merge()
 
     def merge(self):
@@ -44,9 +43,12 @@ class merge_measured_data_node:
         self.lidar_left = None
         self.lidar_right = None
 
+def main(args=None):
+    rclpy.init(args=args)
+    merge_measured_data_node = MergeMeasuredDataNode()
+    rclpy.spin(merge_measured_data_node)
+    merge_measured_data_node.destroy_node()
+    rclpy.shutdown()
+
 if __name__ == '__main__':
-    mmd = merge_measured_data_node()
-    DURATION = 1
-    r = rospy.Rate(1 / DURATION)
-    while not rospy.is_shutdown():
-        r.sleep()
+    main()
