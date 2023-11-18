@@ -22,6 +22,7 @@ from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
 from launch.actions import ExecuteProcess, TimerAction
 from launch.actions import IncludeLaunchDescription
+from launch_ros.actions import Node
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import LaunchConfiguration
 
@@ -55,5 +56,7 @@ def generate_launch_description():
             IncludeLaunchDescription(
                 PythonLaunchDescriptionSource([launch_file_dir,'/spawn_urdf.launch.py'])
             )
-        ])
+        ]),
+
+        Node(package='lidar_with_mirror', executable='merge_measured_data.py', name='merge_measured_data')
     ])
