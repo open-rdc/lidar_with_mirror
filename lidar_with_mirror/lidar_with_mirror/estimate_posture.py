@@ -22,18 +22,14 @@ class EstimatePosture(Node):
         self.declare_parameters(
             namespace='',
             parameters=[
-                ('mirror_distance', 0.1),
-                ('mirror_roll_angle', math.pi / 4),
-                ('scan_front_begin', -0.70),
-                ('scan_front_end', 0.70),
-                ('scan_left_begin', -1.80),
-                ('scan_left_end', -1.05),
-                ('scan_right_begin', 1.14),
-                ('scan_right_end', 1.80)
+                ('scan_front_begin', math.radians(-80)),
+                ('scan_front_end',  math.radians(80)),
+                ('scan_right_begin',  math.radians(-140)),
+                ('scan_right_end',  math.radians(-105)),
+                ('scan_left_begin',  math.radians(105)),
+                ('scan_left_end', math.radians(140))
             ]
         )
-        self.mirror_distance = self.get_parameter('mirror_distance').value
-        self.mirror_roll_angle = self.get_parameter('mirror_roll_angle').value
         self.scan_front_begin = self.get_parameter('scan_front_begin').value
         self.scan_front_end = self.get_parameter('scan_front_end').value
         self.scan_left_begin = self.get_parameter('scan_left_begin').value
@@ -42,10 +38,12 @@ class EstimatePosture(Node):
         self.scan_right_end = self.get_parameter('scan_right_end').value
 
         # Subscribers and Publishers
-        self.sub_scan = self.create_subscription(LaserScan, '/lidar_with_mirror_scan', self.callback_scan, 10)
-        self.pub_scan_front = self.create_publisher(LaserScan, 'scan_front', 10)
-        self.pub_pc_right = self.create_publisher(PointCloud2, "point_cloud_right", 10)
-        self.pub_pc_left = self.create_publisher(PointCloud2, "point_cloud_left", 10)
+        self.sub_scan = self.create_subscription(LaserScan, '/lidar_with_mirror_scan', self.callback_scan, 1)
+        self.pub_scan_front = self.create_publisher(LaserScan, 'scan_front', 1)
+        #self.pub_scan_left = self.create_publisher(LaserScan, 'scan_left', 1)
+        #self.pub_scan_right = self.create_publisher(LaserScan, 'scan_right', 1)
+        self.pub_pc_right = self.create_publisher(PointCloud2, "point_cloud_right", 1)
+        self.pub_pc_left = self.create_publisher(PointCloud2, "point_cloud_left", 1)
 
         # Laser Projection
         self.lp = LaserProjection()
@@ -129,10 +127,12 @@ class EstimatePosture(Node):
     def callback_scan(self, data):
         # Trimming scanned data within a specified range
         front_data = self.trim_scan_data(data, self.scan_front_begin, self.scan_front_end)
-        left_data = self.trim_scan_data(data, self.scan_left_begin, self.scan_left_end)
         right_data = self.trim_scan_data(data, self.scan_right_begin, self.scan_right_end)
+        left_data = self.trim_scan_data(data, self.scan_left_begin, self.scan_left_end)
         right_data.header.frame_id = "lidar_with_mirror_right_link"
         left_data.header.frame_id  = "lidar_with_mirror_left_link"
+        #self.pub_scan_left.publish(left_data)
+        #self.pub_scan_right.publish(right_data)
         
         # Converting to PointCloud and transforming
         right_pc = self.lp.projectLaser(right_data)
@@ -154,11 +154,11 @@ class EstimatePosture(Node):
         for p in pc2.read_points(left_pc_base, skip_nans=True, field_names=("x", "y", "z")):
             pc.append([p[0],p[1],p[2]])
         coef, rmd = self.find_plane(pc)
-        print(coef, rmd)
+        print("coef: "+str(coef)+", rmd: "+str(rmd))
         if rmd < 0.15: #adjust
             self.height = math.fabs(coef[3])/math.sqrt(coef[0]**2+coef[1]**2+coef[2]**2)
             self.roll  = math.atan(coef[1]/coef[2])+math.pi
-            self.pitch = math.atan(-coef[0]/coef[2]*math.cos(self.roll))
+            self.pitch = math.atan(coef[0]/coef[2]*math.cos(self.roll))
 
         # Calculating LiDAR position with respect to the ground
         br = TransformBroadcaster(self)
