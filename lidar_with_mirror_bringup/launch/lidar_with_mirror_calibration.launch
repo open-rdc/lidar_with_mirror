@@ -11,7 +11,7 @@
       <arg name="headless" value="false"/>
     </include>
 
-    <param name="robot_description" command="$(find xacro)/xacro.py '$(find lidar_with_mirror_description)/urdf/orne_box_lidar_with_mirror.urdf.xacro'"/>
+    <param name="robot_description" command="$(find xacro)/xacro '$(find lidar_with_mirror_description)/urdf/orne_box_lidar_with_mirror.urdf.xacro'"/>
 
     <!-- Run a python script to the send a service call to gazebo_ros to spawn a URDF robot -->
     <node name="urdf_spawner" pkg="gazebo_ros" type="spawn_model" respawn="false" output="screen"
@@ -34,7 +34,7 @@
         <param name="fixed_frame" type="string" value="base_link" />
     </node>
 -->
-    <include file="$(find orne_box_bringup)/launch/includes/base.launch.xml"/>
+    <include file="$(find lidar_with_mirror_bringup)/launch/includes/base.launch.xml"/>
 
     <node type="merge_measured_data.py" pkg="lidar_with_mirror" name="merged_data_node"/>
 </launch>

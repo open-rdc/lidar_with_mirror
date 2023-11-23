@@ -5,15 +5,6 @@
   <xacro:include filename="$(find lidar_with_mirror_description)/urdf/orne_box_lidar_with_mirror.gazebo.xacro"/>
 
   <link name="base_link">
-<!--
-    <visual>
-      <origin xyz="0 0 -0.154" rpy="0 0 0"/>
-      <geometry>
-        <mesh filename="package://orne_box_description/meshes/bases/orne_box_base.stl" scale="1 1 1"/>
-      </geometry>
-      <material name="orange"/>
-    </visual>
--->
     <visual>
       <origin xyz="0.090 0 0.1715" rpy="0 0 0"/>
       <geometry>
@@ -105,7 +96,7 @@
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
-        <mesh filename="package://orne_box_description/meshes/wheels/tire.stl" scale="1 1 1"/>
+        <mesh filename="package://lidar_with_mirror_description/meshes/wheels/tire.stl" scale="1 1 1"/>
       </geometry>
 <!--
       <origin xyz="0 0 0" rpy="0 0 0"/>
@@ -143,7 +134,7 @@
     <visual>
       <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
-        <mesh filename="package://orne_box_description/meshes/wheels/tire.stl" scale="1 1 1"/>
+        <mesh filename="package://lidar_with_mirror_description/meshes/wheels/tire.stl" scale="1 1 1"/>
       </geometry>
 <!--
       <origin xyz="0 0 0" rpy="0 0 0"/>

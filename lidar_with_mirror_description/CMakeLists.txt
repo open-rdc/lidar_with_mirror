@@ -8,6 +8,6 @@ find_package(catkin REQUIRED COMPONENTS
 
 catkin_package()
 
-install(DIRECTORY urdf
+install(DIRECTORY meshes rviz urdf
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
 )

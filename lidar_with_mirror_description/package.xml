@@ -4,7 +4,11 @@
   <version>0.0.0</version>
   <description>The lidar_with_mirror_description package</description>
   <maintainer email="yasuo.hayashibara@it-chiba.ac.jp">Yasuo Hayashibara</maintainer>
-  <license>TODO</license>
+  <license>BSD</license>
+
   <buildtool_depend>catkin</buildtool_depend>
-  <export></export>
+  <build_depend>icart_mini_description</build_depend>
+  <build_depend>xacro</build_depend>
+  <exec_depend>icart_mini_description</exec_depend>
+  <exec_depend>xacro</exec_depend>
 </package>
