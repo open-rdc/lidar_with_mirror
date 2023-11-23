@@ -4,6 +4,7 @@
   <xacro:macro name="lidar_with_mirror" params="name parent *origin left_roll_rad left_pitch_rad left_distance_m right_roll_rad right_pitch_rad right_distance_m">
     <joint name="${name}_joint" type="fixed">
       <axis xyz="0 0 1"/>
+      <xacro:insert_block name="origin"/>
       <parent link="${parent}"/>
       <child link="${name}_link"/>
     </joint>
