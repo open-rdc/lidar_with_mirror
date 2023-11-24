@@ -219,7 +219,7 @@
   <joint name="lidar_with_mirror_prismatic_joint" type="prismatic">
     <parent link="base_link"/>
     <child link="lidar_with_mirror_prismatic_link"/>
-    <origin xyz="-0.15 0 0.56" rpy="0 0 0"/>
+    <origin xyz="0.43 0.0 0.34" rpy="0 0 0"/>
     <axis xyz="0 0 1"/>
     <limit effort="100" velocity="100.0" lower="-0.3" upper="1" />
   </joint>
@@ -234,7 +234,7 @@
   <joint name="lidar_with_mirror_pitch_joint" type="revolute">
     <parent link="lidar_with_mirror_prismatic_link"/>
     <child link="lidar_with_mirror_pitch_link"/>
-    <origin xyz="0 0 0" rpy="0 ${PI/9} 0"/>
+    <origin xyz="0 0 0" rpy="0 0.314 0"/>
     <axis xyz="0 1 0"/>
     <limit effort="100" velocity="100.0" lower="${-PI}" upper="${PI}" />
   </joint>
@@ -262,7 +262,8 @@
   </link>
 
   <xacro:include filename="$(find lidar_with_mirror_description)/urdf/sensor/lidar_with_mirror.urdf.xacro" />
-  <xacro:lidar_with_mirror name="lidar_with_mirror" parent="lidar_with_mirror_roll_link" left_roll_rad="0.769999299112962" left_pitch_rad="-0.05" left_distance_m="0.073124500184212" right_roll_rad="0.787426157712581" right_pitch_rad="-0.05" right_distance_m="0.072588298861567">
+
+  <xacro:lidar_with_mirror name="lidar_with_mirror" parent="lidar_with_mirror_roll_link" left_roll_rad="${radians(70)}" left_pitch_rad="0.0" left_distance_m="0.21" right_roll_rad="${radians(70)}" right_pitch_rad="0.0" right_distance_m="0.21">
     <origin xyz="0 0 0" rpy="0 0 0"/>
   </xacro:lidar_with_mirror>
 
