@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 <robot name="check_lidar_with_mirror" xmlns:xacro="http://ros.org/wiki/xacro">
   <xacro:property name="PI" value="3.1415926535897931"/>
-  <xacro:include filename="$(find lidar_with_mirror_description)/urdf/lidar_with_mirror.urdf.xacro" />
+  <xacro:include filename="$(find lidar_with_mirror_description)/urdf/sensor/lidar_with_mirror.urdf.xacro" />
   <link name="base_link"/>
 
   <xacro:lidar_with_mirror name="lidar_with_mirror" parent="base_link" left_roll_rad="0.769999299112962" left_pitch_rad="-0.05" left_distance_m="0.073124500184212" right_roll_rad="0.787426157712581" right_pitch_rad="-0.05" right_distance_m="0.072588298861567">
