@@ -216,6 +216,7 @@
     <origin xyz="0.374295 0 0.2185" rpy="${-PI} 0 0"/>
   </xacro:sensor_hokuyo>
 
+  <!-- Setting for Lidar with mirror -->
   <joint name="lidar_with_mirror_prismatic_joint" type="prismatic">
     <parent link="base_link"/>
     <child link="lidar_with_mirror_prismatic_link"/>
@@ -263,7 +264,7 @@
 
   <xacro:include filename="$(find lidar_with_mirror_description)/urdf/sensor/lidar_with_mirror.urdf.xacro" />
 
-  <xacro:lidar_with_mirror name="lidar_with_mirror" parent="lidar_with_mirror_roll_link" left_roll_rad="${radians(70)}" left_pitch_rad="0.0" left_distance_m="0.21" right_roll_rad="${radians(70)}" right_pitch_rad="0.0" right_distance_m="0.21">
+  <xacro:lidar_with_mirror name="lidar_with_mirror" parent="lidar_with_mirror_roll_link" right_roll_rad="${radians(70)}" left_pitch_rad="0.0" right_distance_m="0.21" left_roll_rad="${radians(70)}" right_pitch_rad="0.0" left_distance_m="0.21">
     <origin xyz="0 0 0" rpy="0 0 0"/>
   </xacro:lidar_with_mirror>
 

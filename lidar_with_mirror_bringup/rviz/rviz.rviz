@@ -71,21 +71,21 @@ Visualization Manager:
           Value: false
         lidar_with_mirror_link:
           Value: false
-        lidar_with_mirror_mirror1_prismatic2_link:
+        lidar_with_mirror_left_prismatic2_link:
           Value: false
-        lidar_with_mirror_mirror1_prismatic_link:
+        lidar_with_mirror_left_prismatic_link:
           Value: false
-        lidar_with_mirror_mirror1_roll_link:
+        lidar_with_mirror_left_roll_link:
           Value: false
-        lidar_with_mirror_mirror1_yaw_link:
+        lidar_with_mirror_left_yaw_link:
           Value: false
-        lidar_with_mirror_mirror2_prismatic2_link:
+        lidar_with_mirror_right_prismatic2_link:
           Value: false
-        lidar_with_mirror_mirror2_prismatic_link:
+        lidar_with_mirror_right_prismatic_link:
           Value: false
-        lidar_with_mirror_mirror2_roll_link:
+        lidar_with_mirror_right_roll_link:
           Value: false
-        lidar_with_mirror_mirror2_yaw_link:
+        lidar_with_mirror_right_yaw_link:
           Value: false
         lidar_with_mirror_right_link:
           Value: false
@@ -100,16 +100,16 @@ Visualization Manager:
             {}
           lidar_with_mirror_link:
             lidar_with_mirror_center_link:
-              lidar_with_mirror_mirror1_prismatic_link:
-                lidar_with_mirror_mirror1_yaw_link:
-                  lidar_with_mirror_mirror1_roll_link:
-                    lidar_with_mirror_mirror1_prismatic2_link:
+              lidar_with_mirror_left_prismatic_link:
+                lidar_with_mirror_left_yaw_link:
+                  lidar_with_mirror_left_roll_link:
+                    lidar_with_mirror_left_prismatic2_link:
                       lidar_with_mirror_right_link:
                         {}
-              lidar_with_mirror_mirror2_prismatic_link:
-                lidar_with_mirror_mirror2_yaw_link:
-                  lidar_with_mirror_mirror2_roll_link:
-                    lidar_with_mirror_mirror2_prismatic2_link:
+              lidar_with_mirror_right_prismatic_link:
+                lidar_with_mirror_right_yaw_link:
+                  lidar_with_mirror_right_roll_link:
+                    lidar_with_mirror_right_prismatic2_link:
                       lidar_with_mirror_left_link:
                         {}
       Update Interval: 0

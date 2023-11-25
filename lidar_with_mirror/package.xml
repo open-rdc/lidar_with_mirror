@@ -13,9 +13,9 @@
   <exec_depend>roscpp</exec_depend>
   <exec_depend>rospy</exec_depend>
   <exec_depend>std_msgs</exec_depend>
+  <exec_depend>tf2_sensor_msgs</exec_depend>
   <exec_depend>lidar_with_mirror_bringup</exec_depend>
   <exec_depend>lidar_with_mirror_control</exec_depend>
   <exec_depend>lidar_with_mirror_description</exec_depend>
   <exec_depend>lidar_with_mirror_navigation_executor</exec_depend>
-
 </package>
