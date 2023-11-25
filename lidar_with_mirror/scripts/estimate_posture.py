@@ -18,14 +18,12 @@ from geometry_msgs.msg import TransformStamped, Quaternion
 class EstimatePosture():
     def __init__(self):
         try:
-            self.mirror_distance   = rospy.get_param("/lidar_with_mirror/mirror_distance"  , 0.1         )
-            self.mirror_roll_angle = rospy.get_param("/lidar_with_mirror/mirror_roll_angle",  math.pi  /4)
-            self.scan_front_begin  = rospy.get_param("/lidar_with_mirror/scan_front_begin" , -0.70 )
-            self.scan_front_end    = rospy.get_param("/lidar_with_mirror/scan_front_end"   ,  0.70 )
-            self.scan_left_begin   = rospy.get_param("/lidar_with_mirror/scan_left_begin"  , -1.80 ) #-2.00
-            self.scan_left_end     = rospy.get_param("/lidar_with_mirror/scan_left_end"    , -1.05 )
-            self.scan_right_begin  = rospy.get_param("/lidar_with_mirror/scan_right_begin" ,  1.14 )
-            self.scan_right_end    = rospy.get_param("/lidar_with_mirror/scan_right_end"   ,  1.80 ) #2.09
+            self.scan_front_begin  = rospy.get_param("/lidar_with_mirror/scan_front_begin" , math.radians( -55))
+            self.scan_front_end    = rospy.get_param("/lidar_with_mirror/scan_front_end"   , math.radians(  55))
+            self.scan_right_begin  = rospy.get_param("/lidar_with_mirror/scan_right_begin" , math.radians(-115))
+            self.scan_right_end    = rospy.get_param("/lidar_with_mirror/scan_right_end"   , math.radians( -65))
+            self.scan_left_begin   = rospy.get_param("/lidar_with_mirror/scan_left_begin"  , math.radians(  65))
+            self.scan_left_end     = rospy.get_param("/lidar_with_mirror/scan_left_end"    , math.radians( 115))
         except ROSException:
             rospy.loginfo("param load error")
 
@@ -132,7 +130,7 @@ class EstimatePosture():
         print(coef, rmd)
         if rmd < 0.15: #adjust
             self.height = math.fabs(coef[3])/math.sqrt(coef[0]**2+coef[1]**2+coef[2]**2)
-            self.roll  = math.atan(coef[1]/coef[2])+math.pi
+            self.roll  = math.atan(coef[1]/coef[2])
             self.pitch = math.atan(-coef[0]/coef[2]*math.cos(self.roll))
 
         # Calculating LiDAR position with respect to the ground

@@ -18,14 +18,12 @@ from geometry_msgs.msg import TransformStamped
 class EstimatePosture():
     def __init__(self):
         try:
-            self.mirror_distance   = rospy.get_param("/lidar_with_mirror/mirror_distance"  , 0.1         )
-            self.mirror_roll_angle = rospy.get_param("/lidar_with_mirror/mirror_roll_angle",  math.pi  /4)
-            self.scan_front_begin  = rospy.get_param("/lidar_with_mirror/scan_front_begin" , -math.pi  /3 + 0.01)
-            self.scan_front_end    = rospy.get_param("/lidar_with_mirror/scan_front_end"   ,  math.pi  /3 - 0.01)
-            self.scan_left_begin   = rospy.get_param("/lidar_with_mirror/scan_left_begin"  ,  math.pi  /3 + 0.01)
-            self.scan_left_end     = rospy.get_param("/lidar_with_mirror/scan_left_end"    ,  math.pi*2/3       )
-            self.scan_right_begin  = rospy.get_param("/lidar_with_mirror/scan_right_begin" , -math.pi*2/3       )
-            self.scan_right_end    = rospy.get_param("/lidar_with_mirror/scan_right_end"   , -math.pi  /3 - 0.01)
+            self.scan_front_begin  = rospy.get_param("/lidar_with_mirror/scan_front_begin" , math.radians( -55))
+            self.scan_front_end    = rospy.get_param("/lidar_with_mirror/scan_front_end"   , math.radians(  55))
+            self.scan_right_begin  = rospy.get_param("/lidar_with_mirror/scan_right_begin" , math.radians(-115))
+            self.scan_right_end    = rospy.get_param("/lidar_with_mirror/scan_right_end"   , math.radians( -65))
+            self.scan_left_begin   = rospy.get_param("/lidar_with_mirror/scan_left_begin"  , math.radians(  65))
+            self.scan_left_end     = rospy.get_param("/lidar_with_mirror/scan_left_end"    , math.radians( 115))
         except ROSException:
             rospy.loginfo("param load error")
 
@@ -114,7 +112,7 @@ class EstimatePosture():
         t.child_frame_id = "lidar_with_mirror_estimated_link"
         t.transform.translation.x = 0
         t.transform.translation.y = 0
-        t.transform.translation.z = coef[3]/coef[2] - 0.3
+        t.transform.translation.z = coef[3]/coef[2] - 0.34
         roll  = math.atan(coef[1]/coef[2])
         pitch = math.atan(-coef[0]/coef[2]*math.cos(roll))
         quaternion = trans.transform.rotation
