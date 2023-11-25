@@ -32,9 +32,9 @@ class CalibrateMirrorPose():
             rospy.loginfo("param load error")
 
         self.sub_scan = rospy.Subscriber('/scan', LaserScan, self.callbackScan)
-        self.pub_scan_front = rospy.Publisher('scan_front', LaserScan, queue_size=1)
-        self.pub_scan_right = rospy.Publisher('scan_right', LaserScan, queue_size=1)
-        self.pub_scan_left  = rospy.Publisher('scan_left' , LaserScan, queue_size=1)
+        self.pub_scan_front = rospy.Publisher('front_scan', LaserScan, queue_size=1)
+        self.pub_right_scan = rospy.Publisher('right_scan', LaserScan, queue_size=1)
+        self.pub_left_scan  = rospy.Publisher('left_scan' , LaserScan, queue_size=1)
         self.maker_pub = rospy.Publisher("marker_pub", Marker, queue_size=10)
         self.marker = Marker()
         self.marker.header.frame_id = "laser"
@@ -105,8 +105,8 @@ class CalibrateMirrorPose():
         left_data  = self.trim_scan_data(data, self.scan_left_begin , self.scan_left_end )
         right_data = self.trim_scan_data(data, self.scan_right_begin, self.scan_right_end)
         self.pub_scan_front.publish(front_data)
-        self.pub_scan_left.publish(left_data)
-        self.pub_scan_right.publish(right_data)
+        self.pub_left_scan.publish(left_data)
+        self.pub_right_scan.publish(right_data)
 
         # Calculate posture of sensor
         na = int(0.1 / data.angle_increment)

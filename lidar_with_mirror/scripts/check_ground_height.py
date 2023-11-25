@@ -31,9 +31,9 @@ class EstimatePosture():
             rospy.loginfo("param load error")
 
         self.sub_scan = rospy.Subscriber('/lidar_with_mirror_scan', LaserScan, self.callbackScan)
-        self.pub_scan_front = rospy.Publisher('scan_front', LaserScan, queue_size=1)
-        self.pub_scan_right = rospy.Publisher('scan_right', LaserScan, queue_size=1)
-        self.pub_scan_left  = rospy.Publisher('scan_left' , LaserScan, queue_size=1)
+        self.pub_scan_front = rospy.Publisher('front_scan', LaserScan, queue_size=1)
+        self.pub_right_scan = rospy.Publisher('right_scan', LaserScan, queue_size=1)
+        self.pub_left_scan  = rospy.Publisher('left_scan' , LaserScan, queue_size=1)
         self.lp = lg.LaserProjection()
         self.pub_pc_right = rospy.Publisher("point_cloud_right", PointCloud2, queue_size=1)
         self.pub_pc_left  = rospy.Publisher("point_cloud_left" , PointCloud2, queue_size=1)
