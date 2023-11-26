@@ -67,6 +67,31 @@ class EstimatePosture():
         ds = np.dot(r, nv)
         return np.r_[nv, -np.mean(ds)], s[-1]
 
+    def find_most_common_plane(self, r, num_iterations=100, threshold_distance=0.01):
+        best_plane = None
+        best_support = 0
+        n = len(r)
+        half_n = n // 2
+
+        for _ in range(num_iterations):
+            random_indices1 = np.random.choice(half_n, 3, replace=False)
+            random_indices2 = np.random.choice(half_n, 3, replace=False) + half_n
+            random_points = np.concatenate((r[random_indices1], r[random_indices2]))
+
+            c = np.mean(random_points, axis=0)
+            r0 = random_points - c
+            u, s, v = np.linalg.svd(r0)
+            nv = v[-1, :]
+
+            ds = np.dot(r-c, nv)
+            support = np.sum(np.abs(ds) < threshold_distance)
+
+            if support > best_support:
+                best_support = support
+                best_plane = np.r_[nv, -np.mean(np.dot(random_points, nv))]
+
+        return best_plane, best_support
+
     def hough(self, list_x, list_y):
         bin = np.zeros((self.no_bin_the, self.no_bin_rho))
         for x, y in zip(list_x, list_y):
@@ -79,8 +104,10 @@ class EstimatePosture():
         max_angle = bin.argmax() // self.no_bin_rho
         max_dist = bin.argmax() % self.no_bin_rho
         return -self.cos_t[max_angle]/self.sin_t[max_angle], 1/self.sin_t[max_angle]*(max_dist-self.no_bin_rho/2)/(self.no_bin_rho/2)*self.max_rho
+    
     def dist_from_line(self, x, y, a, b):
         return abs(a * x - y + b) / math.sqrt(a ** 2 + 1)
+    
     def line_detect(self, list_x, list_y, a, b, threshold):
         res_x, res_y = [], []
         for x, y in zip(list_x, list_y):
@@ -88,6 +115,7 @@ class EstimatePosture():
                 res_x.append(x)
                 res_y.append(y)
         return res_x, res_y
+    
     def delete_outliers(self, pc):
         list_x, list_y = [], []
         for p in pc2.read_points(pc, skip_nans=True, field_names=("x", "y")):
@@ -126,9 +154,11 @@ class EstimatePosture():
             pc.append(p)
         for p in pc2.read_points(left_pc_base, skip_nans=True, field_names=("x", "y", "z")):
             pc.append(p)
-        coef, rmd = self.find_plane(pc)
-        print(coef, rmd)
-        if rmd < 0.15: #adjust
+        #coef, rmd = self.find_plane(np.array(pc))
+        coef, support = self.find_most_common_plane(np.array(pc))
+        print(coef, support)
+        #if rmd < 0.15: #adjust
+        if True:
             self.height = math.fabs(coef[3])/math.sqrt(coef[0]**2+coef[1]**2+coef[2]**2)
             self.roll  = math.atan(coef[1]/coef[2])
             self.pitch = math.atan(-coef[0]/coef[2]*math.cos(self.roll))
