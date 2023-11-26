@@ -28,7 +28,7 @@ class EstimatePosture():
             rospy.loginfo("param load error")
 
         self.sub_scan = rospy.Subscriber('/lidar_with_mirror_scan', LaserScan, self.callbackScan)
-        self.pub_scan_front = rospy.Publisher('scan_front', LaserScan, queue_size=1)
+        self.pub_lidar_with_mirror_estimated_scan = rospy.Publisher('lidar_with_mirror_estimated_scan', LaserScan, queue_size=1)
         self.pub_pc_right = rospy.Publisher("point_cloud_right", PointCloud2, queue_size=1)
         self.pub_pc_left  = rospy.Publisher("point_cloud_left" , PointCloud2, queue_size=1)
         self.lp = lg.LaserProjection()
@@ -148,7 +148,7 @@ class EstimatePosture():
 
         # Calculate ground height based on estimated LiDAR position
         front_data.header.frame_id = "lidar_with_mirror_estimated_center_link"
-        self.pub_scan_front.publish(front_data)
+        self.pub_lidar_with_mirror_estimated_scan.publish(front_data)
         left_pc_base.header.frame_id = "lidar_with_mirror_estimated_center_link"
         right_pc_base.header.frame_id = "lidar_with_mirror_estimated_center_link"
         self.pub_pc_left.publish(left_pc_base)

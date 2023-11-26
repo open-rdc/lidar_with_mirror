@@ -12,7 +12,6 @@
   <group unless="$(arg emcl)">
     <node pkg="amcl" type="amcl" name="amcl" output="screen">
       <rosparam file="$(find lidar_with_mirror_navigation_executor)/param/localization_params.yaml" command="load"/>
-      <rosparam file="$(find lidar_with_mirror_navigation_executor)/param/localization_params_$(arg robot_name).yaml" command="load"/>
       <rosparam file="$(arg init_pos_file)" command="load"/>
     </node>
   </group>
