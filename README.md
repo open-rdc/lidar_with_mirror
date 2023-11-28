@@ -1,19 +1,34 @@
-# lidar_with_mirror
+# lidar_with_mirror  
+ミラー搭載LiDARの検証用プログラム  
 
-以下のブランチが肥大化してきたのと，orne-boxに直接関わらない内容ですのででこちらで管理します．  
-https://github.com/open-rdc/orne-box/tree/detect_low_obstacle
+以下のブランチの引継ぎ  
+https://github.com/open-rdc/orne-box/tree/detect_low_obstacle  
 
-ビルド  
-orne-boxの環境が構築されていれば，ビルドできると思います．
+## Install  
+Precondition:  
+Install ROS noetic (Ubuntu20.04/docker)  
+Install python3-catkin-tools  
 
-実行  
+```
+cd ~/catkin_ws/src
+git clone -b noetic-devel https://github.com/open-rdc/lidar_with_mirror
+wstool init
+wstool merge lidar_with_mirror/lidar_with_mirror_pkgs.install
+wstool up
+rosdep install --from-paths . --ignore-src --rosdistro $ROS_DISTRO -y
+cd ~/catkin_ws
+catkin build
+source ~/.bashrc
+```
 
-１）シミュレーション環境の実行  
+### Execution 
+
+1) launch simulator  
 ```
 roslaunch lidar_with_mirror_bringup lidar_with_mirror_sim.launch
 ```
 
-２）センサの姿勢の変更（動作確認用）  
+2) センサの姿勢の変更（動作確認用）  
 ```
 rosrun lidar_with_mirror demo_change_angle.py
 ```
@@ -43,4 +58,13 @@ rosrun lidar_with_mirror experiment.py
 roslaunch lidar_with_mirror_bringup lidar_with_mirror_sim.launch
 rosrun lidar_with_mirror check_ground_height.py
 rosrun lidar_with_mirror experiment.py
+```
+
+### Install python3-catkin-tools  
+
+```
+sudo sh -c 'echo "deb http://packages.ros.org/ros/ubuntu `lsb_release -sc` main" > /etc/apt/sources.list.d/ros-latest.list'
+wget http://packages.ros.org/ros.key -O - | sudo apt-key add -
+sudo apt update
+sudo apt install python3-catkin-tools
 ```
