@@ -33,14 +33,14 @@ rosrun lidar_with_mirror demo_change_angle.py
 
 推定した姿勢の誤算の検証
 ```
-roslaunch lidar_with_mirror_sim.launch
+roslaunch lidar_with_mirror_bringup lidar_with_mirror_sim.launch
 rosrun lidar_with_mirror check_estimate_posture.py
 rosrun lidar_with_mirror experiment.py
 ```
 
 検出された地面の誤差の検証
 ```
-roslaunch lidar_with_mirror_sim.launch
+roslaunch lidar_with_mirror_bringup lidar_with_mirror_sim.launch
 rosrun lidar_with_mirror check_ground_height.py
 rosrun lidar_with_mirror experiment.py
 ```
