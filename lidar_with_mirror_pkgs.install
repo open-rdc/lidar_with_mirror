@@ -1,0 +1,12 @@
+- git:
+    uri: https://github.com/open-rdc/icart_mini
+    local-name: icart_mini
+    version: noetic-devel
+- git:
+    uri: https://github.com/open-rdc/ypspur/
+    local-name: ypspur
+    version: noetic-devel
+- git:
+    uri: https://github.com/open-rdc/adi_driver
+    local-name: adi_driver
+    version: master

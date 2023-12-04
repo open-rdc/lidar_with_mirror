@@ -1,11 +1,10 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 from __future__ import print_function
 import roslib
 roslib.load_manifest('lidar_with_mirror')
 import rospy
 from sensor_msgs.msg import LaserScan
 import copy
-import time
 
 class merge_measured_data_node:
     def __init__(self):
@@ -14,9 +13,9 @@ class merge_measured_data_node:
         self.lidar_left = None
         self.lidar_right = None
         self.merged_lidar_pub = rospy.Publisher("/lidar_with_mirror_scan", LaserScan, queue_size=1)
-        self.lidar_with_mirror_center_sub = rospy.Subscriber("/lidar_with_mirror_scan_center", LaserScan, self.callback_lidar_with_mirror_center)
-        self.lidar_with_mirror_left_sub   = rospy.Subscriber("/lidar_with_mirror_scan_left"  , LaserScan, self.callback_lidar_with_mirror_left  )
-        self.lidar_with_mirror_right_sub  = rospy.Subscriber("/lidar_with_mirror_scan_right" , LaserScan, self.callback_lidar_with_mirror_right )
+        self.lidar_with_mirror_center_sub = rospy.Subscriber("/lidar_with_mirror_center_scan", LaserScan, self.callback_lidar_with_mirror_center)
+        self.lidar_with_mirror_left_sub   = rospy.Subscriber("/lidar_with_mirror_left_scan"  , LaserScan, self.callback_lidar_with_mirror_left  )
+        self.lidar_with_mirror_right_sub  = rospy.Subscriber("/lidar_with_mirror_right_scan" , LaserScan, self.callback_lidar_with_mirror_right )
 
     def callback_lidar_with_mirror_center(self, data):
         self.lidar_center = copy.deepcopy(data)
